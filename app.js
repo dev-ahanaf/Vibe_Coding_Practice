@@ -189,22 +189,22 @@ function updateSvgViewBox(nodes) {
   svgMap.setAttribute("viewBox", `${minX - paddingX} ${minY - paddingY} ${width} ${height}`);
 }
 
+// Persistent SVG elements map (FIX 5: preserve elements across state changes for CSS transitions)
+let renderedGraphRef = null;
+const nodeSvgElements = new Map();
+const edgeSvgElements = new Map();
+
 /**
- * Render the building map SVG elements
+ * Build the building map SVG elements once per loaded building dataset
  */
-function renderSvgMap(simState) {
+function buildSvgMap(simState) {
   const graph = simState.graph;
   if (!graph) return;
 
   updateSvgViewBox(graph.nodes);
 
-  const routeResult = simState.routeResult;
-  const edgesUsedSet = new Set(routeResult?.edgesUsed || []);
-  const routeNodesSet = new Set(routeResult?.route || []);
-  const startNodeId = simState.startNodeId;
-  const blockedNodes = simState.blockedNodes;
-  const blockedEdges = simState.blockedEdges;
-  const closedExits = simState.closedExits;
+  nodeSvgElements.clear();
+  edgeSvgElements.clear();
 
   const nodeMap = new Map();
   for (const n of graph.nodes) {
@@ -217,9 +217,6 @@ function renderSvgMap(simState) {
     const fromNode = nodeMap.get(edge.from);
     const toNode = nodeMap.get(edge.to);
     if (!fromNode || !toNode) continue;
-
-    const isBlocked = blockedEdges.has(edge.id);
-    const inRoute = edgesUsedSet.has(edge.id);
 
     // Invisible wider hit-area for easy touch/mouse/keyboard targeting (FIX 1)
     const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -239,7 +236,7 @@ function renderSvgMap(simState) {
     line.setAttribute("y1", fromNode.y);
     line.setAttribute("x2", toNode.x);
     line.setAttribute("y2", toNode.y);
-    line.setAttribute("class", `corridor-edge ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`);
+    line.setAttribute("class", "corridor-edge");
     line.setAttribute("data-edge-id", edge.id);
 
     // Edge Cost Pill Badge at Midpoint
@@ -255,7 +252,7 @@ function renderSvgMap(simState) {
     pillBg.setAttribute("y", "-10");
     pillBg.setAttribute("width", "30");
     pillBg.setAttribute("height", "20");
-    pillBg.setAttribute("class", `cost-bg ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`);
+    pillBg.setAttribute("class", "cost-bg");
 
     const pillText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     pillText.setAttribute("class", "cost-text");
@@ -268,7 +265,7 @@ function renderSvgMap(simState) {
     const onEdgeActivate = (e) => {
       selectHazardElementById("edge", edge.id);
       if (e.shiftKey) {
-        simState.toggleEdgeBlock(edge.id);
+        state.toggleEdgeBlock(edge.id);
       }
     };
 
@@ -289,55 +286,56 @@ function renderSvgMap(simState) {
     svgEdgesLayer.appendChild(hitArea);
     svgEdgesLayer.appendChild(line);
     svgEdgesLayer.appendChild(pillGroup);
+
+    edgeSvgElements.set(edge.id, {
+      edge,
+      hitArea,
+      line,
+      pillGroup,
+      pillBg,
+      pillText
+    });
   }
 
   // 2. Render Nodes Layer
   svgNodesLayer.replaceChildren();
   for (const node of graph.nodes) {
-    const isStart = node.id === startNodeId;
-    const isBlocked = blockedNodes.has(node.id);
-    const isClosedExit = closedExits.has(node.id);
-    const inRoute = routeNodesSet.has(node.id);
-
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("class", `graph-node node-${node.type} ${isStart ? "is-start" : ""} ${isBlocked ? "blocked" : ""} ${isClosedExit ? "closed-exit" : ""} ${inRoute ? "in-route" : ""}`);
+    group.setAttribute("class", `graph-node node-${node.type}`);
     group.setAttribute("transform", `translate(${node.x}, ${node.y})`);
     group.setAttribute("data-node-id", node.id);
     group.setAttribute("tabindex", "0");
     group.setAttribute("role", "button");
     group.setAttribute("aria-label", `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}`);
 
+    let shape;
     if (node.type === "room") {
       // Room: rounded rectangle
-      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      rect.setAttribute("x", "-35");
-      rect.setAttribute("y", "-25");
-      rect.setAttribute("width", "70");
-      rect.setAttribute("height", "50");
-      rect.setAttribute("rx", "10");
-      rect.setAttribute("ry", "10");
-      rect.setAttribute("class", "node-shape");
-      group.appendChild(rect);
+      shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      shape.setAttribute("x", "-35");
+      shape.setAttribute("y", "-25");
+      shape.setAttribute("width", "70");
+      shape.setAttribute("height", "50");
+      shape.setAttribute("rx", "10");
+      shape.setAttribute("ry", "10");
     } else if (node.type === "junction") {
       // Junction: circle
-      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttribute("cx", "0");
-      circle.setAttribute("cy", "0");
-      circle.setAttribute("r", "25");
-      circle.setAttribute("class", "node-shape");
-      group.appendChild(circle);
+      shape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      shape.setAttribute("cx", "0");
+      shape.setAttribute("cy", "0");
+      shape.setAttribute("r", "25");
     } else if (node.type === "exit") {
       // Exit: rounded hex / stadium
-      const exitRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      exitRect.setAttribute("x", "-35");
-      exitRect.setAttribute("y", "-25");
-      exitRect.setAttribute("width", "70");
-      exitRect.setAttribute("height", "50");
-      exitRect.setAttribute("rx", "14");
-      exitRect.setAttribute("ry", "14");
-      exitRect.setAttribute("class", "node-shape");
-      group.appendChild(exitRect);
+      shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      shape.setAttribute("x", "-35");
+      shape.setAttribute("y", "-25");
+      shape.setAttribute("width", "70");
+      shape.setAttribute("height", "50");
+      shape.setAttribute("rx", "14");
+      shape.setAttribute("ry", "14");
     }
+    shape.setAttribute("class", "node-shape");
+    group.appendChild(shape);
 
     // Node ID Label
     const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -347,8 +345,9 @@ function renderSvgMap(simState) {
     group.appendChild(textLabel);
 
     // Sub-label for Room or Exit
+    let typeLabel = null;
     if (node.type !== "junction") {
-      const typeLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      typeLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
       typeLabel.setAttribute("class", "node-type-label");
       typeLabel.setAttribute("y", "15");
       typeLabel.textContent = t(`nodeTypes.${node.type}`);
@@ -366,13 +365,13 @@ function renderSvgMap(simState) {
 
       if (e.shiftKey) {
         if (node.type === "exit") {
-          simState.toggleExitClose(node.id);
+          state.toggleExitClose(node.id);
         } else {
-          simState.toggleNodeBlock(node.id);
+          state.toggleNodeBlock(node.id);
         }
       } else {
         if (node.type === "room" || node.type === "junction") {
-          simState.setStartNode(node.id);
+          state.setStartNode(node.id);
         }
       }
     };
@@ -390,15 +389,18 @@ function renderSvgMap(simState) {
       e.preventDefault();
       if (node.type === "exit") {
         selectHazardElementById("exit", node.id);
-        simState.toggleExitClose(node.id);
+        state.toggleExitClose(node.id);
       } else {
         selectHazardElementById("node", node.id);
-        simState.toggleNodeBlock(node.id);
+        state.toggleNodeBlock(node.id);
       }
     });
 
     // Tooltip listeners
     group.addEventListener("mouseenter", (e) => {
+      const isBlocked = state.blockedNodes.has(node.id);
+      const isClosedExit = state.closedExits.has(node.id);
+      const isStart = state.startNodeId === node.id;
       showNodeTooltip(e, node, isBlocked, isClosedExit, isStart);
     });
     group.addEventListener("mouseleave", () => {
@@ -406,7 +408,79 @@ function renderSvgMap(simState) {
     });
 
     svgNodesLayer.appendChild(group);
+
+    nodeSvgElements.set(node.id, {
+      node,
+      group,
+      shape,
+      textLabel,
+      typeLabel
+    });
   }
+}
+
+/**
+ * Update classes and attributes on persistent SVG elements (preserves CSS transitions)
+ */
+function updateSvgMapVisuals(simState) {
+  const routeResult = simState.routeResult;
+  const edgesUsedSet = new Set(routeResult?.edgesUsed || []);
+  const routeNodesSet = new Set(routeResult?.route || []);
+  const startNodeId = simState.startNodeId;
+  const blockedNodes = simState.blockedNodes;
+  const blockedEdges = simState.blockedEdges;
+  const closedExits = simState.closedExits;
+
+  // 1. Update Edges
+  for (const [edgeId, elemData] of edgeSvgElements.entries()) {
+    const isBlocked = blockedEdges.has(edgeId);
+    const inRoute = edgesUsedSet.has(edgeId);
+
+    elemData.line.setAttribute(
+      "class",
+      `corridor-edge ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`
+    );
+    elemData.pillBg.setAttribute(
+      "class",
+      `cost-bg ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`
+    );
+  }
+
+  // 2. Update Nodes
+  for (const [nodeId, elemData] of nodeSvgElements.entries()) {
+    const node = elemData.node;
+    const isStart = nodeId === startNodeId;
+    const isBlocked = blockedNodes.has(nodeId);
+    const isClosedExit = closedExits.has(nodeId);
+    const inRoute = routeNodesSet.has(nodeId);
+
+    elemData.group.setAttribute(
+      "class",
+      `graph-node node-${node.type} ${isStart ? "is-start" : ""} ${isBlocked ? "blocked" : ""} ${isClosedExit ? "closed-exit" : ""} ${inRoute ? "in-route" : ""}`
+    );
+    elemData.group.setAttribute(
+      "aria-label",
+      `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}`
+    );
+
+    if (elemData.typeLabel) {
+      elemData.typeLabel.textContent = t(`nodeTypes.${node.type}`);
+    }
+  }
+}
+
+/**
+ * Render the building map SVG elements
+ */
+function renderSvgMap(simState) {
+  const graph = simState.graph;
+  if (!graph) return;
+
+  if (renderedGraphRef !== graph) {
+    buildSvgMap(simState);
+    renderedGraphRef = graph;
+  }
+  updateSvgMapVisuals(simState);
 }
 
 /**
