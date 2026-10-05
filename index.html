@@ -165,16 +165,28 @@
               <span class="legend-text" id="txt-legend-exit">Exit</span>
             </div>
             <div class="legend-row">
-              <span class="legend-swatch node-blocked-swatch"></span>
-              <span class="legend-text" id="txt-legend-blocked">Blocked / Hazardous</span>
+              <span class="legend-swatch node-start-swatch">
+                <svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--start-blue)" stroke-width="2" stroke-dasharray="3 2"/><circle cx="10" cy="10" r="3.5" fill="var(--start-blue)"/></svg>
+              </span>
+              <span class="legend-text" id="txt-legend-start">Start Location (Marker)</span>
             </div>
             <div class="legend-row">
-              <span class="legend-swatch node-closed-swatch"></span>
-              <span class="legend-text" id="txt-legend-closed">Closed Exit</span>
+              <span class="legend-swatch node-blocked-swatch">
+                <svg viewBox="0 0 20 20" width="18" height="18"><line x1="4" y1="4" x2="16" y2="16" stroke="var(--hazard-red)" stroke-width="2.5"/><line x1="16" y1="4" x2="4" y2="16" stroke="var(--hazard-red)" stroke-width="2.5"/></svg>
+              </span>
+              <span class="legend-text" id="txt-legend-blocked">Blocked Node (Stripes + ×)</span>
             </div>
             <div class="legend-row">
-              <span class="legend-swatch edge-route-swatch"></span>
-              <span class="legend-text" id="txt-legend-route">Active Evacuation Path</span>
+              <span class="legend-swatch node-closed-swatch">
+                <svg viewBox="0 0 20 20" width="18" height="18"><line x1="3" y1="10" x2="17" y2="10" stroke="var(--closed-amber)" stroke-width="3.5" stroke-linecap="round"/></svg>
+              </span>
+              <span class="legend-text" id="txt-legend-closed">Closed Exit (Bar)</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch edge-route-swatch">
+                <svg viewBox="0 0 20 20" width="18" height="18"><line x1="2" y1="10" x2="18" y2="10" stroke="var(--safe-route)" stroke-width="4"/><polyline points="8,6 12,10 8,14" fill="none" stroke="#fff" stroke-width="2"/></svg>
+              </span>
+              <span class="legend-text" id="txt-legend-route">Active Evacuation Route</span>
             </div>
           </div>
 
@@ -211,18 +223,19 @@
         <!-- SVG Building Graph rendered dynamically here -->
         <svg id="svg-map" class="building-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <!-- Glowing line filter for evacuation path -->
-            <filter id="route-glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <!-- Hazard stripe pattern -->
+            <!-- Evacuation path directional chevron marker -->
+            <marker id="route-chevron" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <polyline points="2,2 7,5 2,8" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </marker>
+            <!-- Hazard stripe pattern (Light Theme) -->
             <pattern id="hazard-stripes" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="0" y2="12" stroke="#b91c1c" stroke-width="4" />
+              <line x1="6" y1="0" x2="6" y2="12" stroke="#f8fafc" stroke-width="4" />
+            </pattern>
+            <!-- Hazard stripe pattern (Dark Theme) -->
+            <pattern id="hazard-stripes-dark" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
               <line x1="0" y1="0" x2="0" y2="12" stroke="#ef4444" stroke-width="4" />
-              <line x1="6" y1="0" x2="6" y2="12" stroke="#1f2937" stroke-width="4" />
+              <line x1="6" y1="0" x2="6" y2="12" stroke="#131b26" stroke-width="4" />
             </pattern>
           </defs>
           <g id="svg-edges-layer"></g>

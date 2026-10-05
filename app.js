@@ -62,6 +62,7 @@ const i18nBindings = [
   { id: "txt-legend-room", key: "legendRoom" },
   { id: "txt-legend-junction", key: "legendJunction" },
   { id: "txt-legend-exit", key: "legendExit" },
+  { id: "txt-legend-start", key: "legendStart" },
   { id: "txt-legend-blocked", key: "legendBlocked" },
   { id: "txt-legend-closed", key: "legendClosed" },
   { id: "txt-legend-route", key: "legendRoute" },
@@ -314,8 +315,18 @@ function buildSvgMap(simState) {
     pillText.setAttribute("class", "cost-text");
     pillText.textContent = edge.cost;
 
+    const pillCross = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    pillCross.setAttribute("class", "pill-hazard-cross");
+    const px1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    px1.setAttribute("x1", "-6"); px1.setAttribute("y1", "-6"); px1.setAttribute("x2", "6"); px1.setAttribute("y2", "6");
+    const px2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    px2.setAttribute("x1", "6"); px2.setAttribute("y1", "-6"); px2.setAttribute("x2", "-6"); px2.setAttribute("y2", "6");
+    pillCross.appendChild(px1);
+    pillCross.appendChild(px2);
+
     pillGroup.appendChild(pillBg);
     pillGroup.appendChild(pillText);
+    pillGroup.appendChild(pillCross);
 
     // Corridor interaction: plain click selects in panel; Shift+click toggles immediately
     const onEdgeActivate = (e) => {
@@ -349,7 +360,8 @@ function buildSvgMap(simState) {
       line,
       pillGroup,
       pillBg,
-      pillText
+      pillText,
+      pillCross
     });
   }
 
@@ -392,6 +404,36 @@ function buildSvgMap(simState) {
     }
     shape.setAttribute("class", "node-shape");
     group.appendChild(shape);
+
+    // Start Location: Concentric coordinate marker ring
+    const startRing = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    startRing.setAttribute("class", "node-start-ring");
+    startRing.setAttribute("cx", "0");
+    startRing.setAttribute("cy", "0");
+    startRing.setAttribute("r", node.type === "junction" ? "36" : "42");
+    group.appendChild(startRing);
+
+    // Blocked Node: Prominent Hazard Cross icon
+    const crossGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    crossGroup.setAttribute("class", "node-hazard-cross");
+    const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l1.setAttribute("x1", "-12"); l1.setAttribute("y1", "-12"); l1.setAttribute("x2", "12"); l1.setAttribute("y2", "12");
+    const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l2.setAttribute("x1", "12"); l2.setAttribute("y1", "-12"); l2.setAttribute("x2", "-12"); l2.setAttribute("y2", "12");
+    crossGroup.appendChild(l1);
+    crossGroup.appendChild(l2);
+    group.appendChild(crossGroup);
+
+    // Closed Exit: Emergency No-Entry / Closed Bar
+    if (node.type === "exit") {
+      const closedBar = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      closedBar.setAttribute("class", "node-closed-bar");
+      closedBar.setAttribute("x1", "-26");
+      closedBar.setAttribute("y1", "0");
+      closedBar.setAttribute("x2", "26");
+      closedBar.setAttribute("y2", "0");
+      group.appendChild(closedBar);
+    }
 
     // Primary Label: node.label (truncated if long) - FIX 6
     const primaryLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -499,9 +541,18 @@ function updateSvgMapVisuals(simState) {
       "class",
       `corridor-edge ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`
     );
+    if (inRoute) {
+      elemData.line.setAttribute("marker-mid", "url(#route-chevron)");
+    } else {
+      elemData.line.removeAttribute("marker-mid");
+    }
     elemData.pillBg.setAttribute(
       "class",
       `cost-bg ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`
+    );
+    elemData.pillGroup.setAttribute(
+      "class",
+      `edge-cost-pill ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`
     );
   }
 
