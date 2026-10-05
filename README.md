@@ -7,7 +7,8 @@ Daffodil International University (DIU) | Computer and Programming Club (CPC)
 
 ## 1. Participant Identity
 - **Participant Name:** Fayek Ahanaf
-- **Registration Number:** [FILL / DIU-2026-PRACTICE]
+- **Registration Number:** 252-16-056
+- **Repository Name:** Vibe_Coding_Practice
 - **Repository URL:** [https://github.com/dev-ahanaf/Vibe_Coding_Practice](https://github.com/dev-ahanaf/Vibe_Coding_Practice)
 - **Live Public HTTPS Deployment:** [https://dev-ahanaf.github.io/Vibe_Coding_Practice/](https://dev-ahanaf.github.io/Vibe_Coding_Practice/)
 
