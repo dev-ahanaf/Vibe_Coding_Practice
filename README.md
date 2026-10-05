@@ -51,7 +51,7 @@ The core routing and schema validation engines are completely decoupled from the
 ```bash
 node test/test-runner.js
 ```
-All 16 unit and scenario checks (covering all official Problem Statement §04.1 scenarios, tie-breaking rules, and schema edge cases) execute and report results directly to the console.
+All 23 unit, tie-breaking, failure-state, and schema edge-case checks execute and report results directly to the console.
 
 ---
 
@@ -117,6 +117,9 @@ All 16 unit and scenario checks (covering all official Problem Statement §04.1 
 
 ### Rerouting After Blocking Junction `C2` (`R1` → `E2`, Cost: 11)
 ![C2 Blocked Reroute](screenshots/c2_blocked.png)
+
+### Bilingual Interface: Bangla Mode (বাংলা ইন্টারফেস)
+![Bangla Mode](screenshots/bangla_mode.png)
 
 ---
 
