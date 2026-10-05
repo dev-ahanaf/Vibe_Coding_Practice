@@ -1,0 +1,191 @@
+/**
+ * Centralized Internationalization (i18n) dictionary for Smart Escape
+ * Sources: Problem Statement §3.2, §4.1; Rulebook §5.6
+ */
+
+export const translations = {
+  en: {
+    appTitle: "Smart Escape",
+    appSubtitle: "Interactive Evacuation Route Simulator",
+    buildingLabel: "Building",
+    importData: "Import JSON",
+    loadSample: "Load Sample Building",
+    resetSimulation: "Reset Hazards",
+    languageToggle: "বাংলা",
+    selectStartLabel: "Select Start Location",
+    startNodeSelectPlaceholder: "-- Choose a start node --",
+    startNode: "Start Node",
+    routeFound: "Route Found",
+    noRouteAvailable: "No route available",
+    startingLocationBlocked: "Starting location blocked",
+    routeSummary: "Evacuation Plan",
+    destinationExit: "Destination Exit",
+    totalCost: "Total Path Cost",
+    nodeSequence: "Route Sequence",
+    legendTitle: "Map Legend & Hazard Controls",
+    legendRoom: "Room (Start candidate)",
+    legendJunction: "Corridor Junction",
+    legendExit: "Exit",
+    legendBlocked: "Blocked / Hazardous",
+    legendClosed: "Closed Exit",
+    legendRoute: "Active Evacuation Path",
+    nodeTypes: {
+      room: "Room",
+      junction: "Junction",
+      exit: "Exit"
+    },
+    actions: {
+      blockNode: "Block",
+      unblockNode: "Unblock",
+      blockEdge: "Block Corridor",
+      unblockEdge: "Unblock Corridor",
+      closeExit: "Close Exit",
+      reopenExit: "Reopen Exit"
+    },
+    validationErrors: {
+      invalidJSON: "Invalid JSON format: Unable to parse file.",
+      missingRoot: "Missing required root fields: 'building', 'nodes', 'edges', 'initial_state'.",
+      invalidBuilding: "'building' must be a non-empty string.",
+      nodeLimit: "Node count must be between 2 and 60.",
+      edgeLimit: "Edge count must be between 1 and 150.",
+      missingStartOrExit: "Graph must have at least one room/junction and at least one exit.",
+      duplicateNodeId: "Duplicate node ID detected: '{id}'.",
+      invalidNode: "Node '{id}' is invalid: must have id, non-empty label, numeric x, y, and type 'room', 'junction', or 'exit'.",
+      duplicateEdgeId: "Duplicate edge ID detected: '{id}'.",
+      invalidEdgeNodes: "Edge '{id}' connects invalid or nonexistent node IDs: '{from}' -> '{to}'.",
+      selfLoop: "Edge '{id}' is a self-loop on node '{from}'.",
+      repeatedPair: "Corridor between '{u}' and '{v}' is defined multiple times.",
+      invalidEdgeCost: "Edge '{id}' must have a positive integer cost (> 0). Found: {cost}.",
+      invalidInitialState: "'initial_state' must contain arrays: 'blocked_nodes', 'blocked_edges', 'closed_exits'.",
+      initialStateUnknownId: "Unknown ID '{id}' referenced in initial_state.{category}.",
+      initialStateCategoryMismatch: "ID '{id}' in initial_state.{category} does not match expected category: expected {expectedType}, found {actualType}."
+    },
+    status: {
+      ready: "Ready. Select a starting location or adjust hazards.",
+      calculating: "Recalculating safest evacuation route...",
+      resetSuccess: "Building restored to initial hazard state.",
+      importedSuccess: "Building data successfully imported and verified.",
+      exportSuccess: "Map exported successfully."
+    },
+    bonus: {
+      alternativeRoute: "Alternative Route",
+      noAlternative: "No viable alternative route exists.",
+      exportPNG: "Export Map as PNG",
+      highContrast: "High Contrast Mode"
+    }
+  },
+  bn: {
+    appTitle: "স্মার্ট এস্কেপ",
+    appSubtitle: "ইন্টারঅ্যাক্টিভ স্থানান্তর রুট সিমুলেটর",
+    buildingLabel: "ভবন",
+    importData: "JSON ইম্পোর্ট করুন",
+    loadSample: "নমুনা ভবন লোড করুন",
+    resetSimulation: "বিপদাবস্থা রিসেট করুন",
+    languageToggle: "English",
+    selectStartLabel: "শুরুর স্থান নির্বাচন করুন",
+    startNodeSelectPlaceholder: "-- শুরুর নোড নির্বাচন করুন --",
+    startNode: "শুরুর নোড",
+    routeFound: "রুট পাওয়া গেছে",
+    noRouteAvailable: "কোনো রুট পাওয়া যায়নি",
+    startingLocationBlocked: "শুরুর অবস্থান অবরুদ্ধ",
+    routeSummary: "স্থানান্তর পরিকল্পনা",
+    destinationExit: "গন্তব্য বহির্গমন পথ",
+    totalCost: "মোট খরচ",
+    nodeSequence: "রুট ক্রম",
+    legendTitle: "মানচিত্র নির্দেশিকা ও বিপদ নিয়ন্ত্রণ",
+    legendRoom: "কক্ষ (শুরুর উপযোগী)",
+    legendJunction: "করিডোর জাংশন",
+    legendExit: "বহির্গমন পথ",
+    legendBlocked: "অবরুদ্ধ / ঝুঁকিপূর্ণ",
+    legendClosed: "বন্ধ বহির্গমন পথ",
+    legendRoute: "সক্রিয় নির্গমন রুট",
+    nodeTypes: {
+      room: "কক্ষ",
+      junction: "জাংশন",
+      exit: "বহির্গমন পথ"
+    },
+    actions: {
+      blockNode: "অবরুদ্ধ করুন",
+      unblockNode: "মুক্ত করুন",
+      blockEdge: "করিডোর বন্ধ করুন",
+      unblockEdge: "করিডোর খুলুন",
+      closeExit: "বহির্গমন বন্ধ করুন",
+      reopenExit: "বহির্গমন খুলুন"
+    },
+    validationErrors: {
+      invalidJSON: "অকার্যকর JSON ফরম্যাট: ফাইল পার্স করা যায়নি।",
+      missingRoot: "প্রয়োজনীয় ক্ষেত্র অনুপস্থিত: 'building', 'nodes', 'edges', 'initial_state'।",
+      invalidBuilding: "'building' অবশ্যই একটি অ-খালি নাম হতে হবে।",
+      nodeLimit: "নোডের সংখ্যা অবশ্যই ২ থেকে ৬০ এর মধ্যে হতে হবে।",
+      edgeLimit: "করিডোরের সংখ্যা অবশ্যই ১ থেকে ১৫০ এর মধ্যে হতে হবে।",
+      missingStartOrExit: "গ্রাফে অবশ্যই কমপক্ষে একটি কক্ষ/জাংশন এবং একটি বহির্গমন পথ থাকতে হবে।",
+      duplicateNodeId: "দ্বৈত নোড আইডি সনাক্ত হয়েছে: '{id}'।",
+      invalidNode: "নোড '{id}' সঠিক নয়: আইডি, অ-খালি লেবেল, সংখ্যাবাচক x, y এবং 'room'/'junction'/'exit' টাইপ থাকতে হবে।",
+      duplicateEdgeId: "দ্বৈত এজ আইডি সনাক্ত হয়েছে: '{id}'।",
+      invalidEdgeNodes: "এজ '{id}' ভুল নোড সংযুক্ত করছে: '{from}' -> '{to}'।",
+      selfLoop: "এজ '{id}' একটি সেলফ-লুপ ('{from}')।",
+      repeatedPair: "'{u}' এবং '{v}' এর মধ্যে একাধিক করিডোর সংজ্ঞায়িত করা হয়েছে।",
+      invalidEdgeCost: "এজ '{id}' এর খরচ অবশ্যই একটি ধনাত্মক পূর্ণসংখ্যা হতে হবে। বর্তমান: {cost}।",
+      invalidInitialState: "'initial_state' এ 'blocked_nodes', 'blocked_edges', 'closed_exits' অ্যারে থাকতে হবে।",
+      initialStateUnknownId: "initial_state.{category} তে অজানা আইডি '{id}' পাওয়া গেছে।",
+      initialStateCategoryMismatch: "initial_state.{category} তে আইডি '{id}' এর ক্যাটাগরি মিলছে না: প্রত্যাশিত {expectedType}, কিন্তু পাওয়া গেছে {actualType}।"
+    },
+    status: {
+      ready: "প্রস্তুত। শুরুর স্থান নির্বাচন করুন অথবা বিপদাবস্থা পরিবর্তন করুন।",
+      calculating: "নিরাপদ নির্গমন রুট পুনরায় গণনা করা হচ্ছে...",
+      resetSuccess: "ভবন প্রাথমিক অবস্থায় পুনর্বহাল করা হয়েছে।",
+      importedSuccess: "ভবনের ডাটা সফলভাবে যাচাই ও লোড করা হয়েছে।",
+      exportSuccess: "মানচিত্র সফলভাবে এক্সপোর্ট করা হয়েছে।"
+    },
+    bonus: {
+      alternativeRoute: "বিকল্প রুট",
+      noAlternative: "কোনো বিকল্প রুট বিদ্যমান নেই।",
+      exportPNG: "মানচিত্র PNG হিসেবে ডাউনলোড করুন",
+      highContrast: "উচ্চ বৈসাদৃশ্য মোড"
+    }
+  }
+};
+
+let currentLanguage = "en";
+
+export function getLanguage() {
+  return currentLanguage;
+}
+
+export function setLanguage(lang) {
+  if (translations[lang]) {
+    currentLanguage = lang;
+  }
+  return currentLanguage;
+}
+
+export function t(keyPath, params = {}) {
+  const keys = keyPath.split(".");
+  let val = translations[currentLanguage];
+  for (const k of keys) {
+    if (val && typeof val === "object" && k in val) {
+      val = val[k];
+    } else {
+      // Fallback to English
+      val = null;
+      break;
+    }
+  }
+
+  if (val === null || val === undefined) {
+    let fallback = translations.en;
+    for (const k of keys) {
+      if (fallback && typeof fallback === "object" && k in fallback) {
+        fallback = fallback[k];
+      } else {
+        return keyPath;
+      }
+    }
+    val = fallback;
+  }
+
+  if (typeof val === "string") {
+    return val.replace(/\{(\w+)\}/g, (_, param) => (params[param] !== undefined ? params[param] : `{${param}}`));
+  }
+  return val;
+}
