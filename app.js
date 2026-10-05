@@ -682,8 +682,7 @@ function renderState(simState) {
     valDestinationExit.textContent = "—";
     valNodeSequence.replaceChildren();
     const emptySpan = document.createElement("span");
-    emptySpan.className = "sequence-empty";
-    emptySpan.style.color = "var(--accent-crimson)";
+    emptySpan.className = "sequence-empty sequence-error";
     emptySpan.textContent = t("startingLocationBlocked");
     valNodeSequence.appendChild(emptySpan);
   } else if (result.status === "no_route") {
@@ -695,8 +694,7 @@ function renderState(simState) {
     valDestinationExit.textContent = "—";
     valNodeSequence.replaceChildren();
     const emptySpan = document.createElement("span");
-    emptySpan.className = "sequence-empty";
-    emptySpan.style.color = "var(--accent-crimson)";
+    emptySpan.className = "sequence-empty sequence-error";
     emptySpan.textContent = t("noRouteAvailable");
     valNodeSequence.appendChild(emptySpan);
   } else {

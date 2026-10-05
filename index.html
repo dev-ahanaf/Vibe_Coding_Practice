@@ -84,7 +84,7 @@
     <!-- Left Panel: Controls, Route Stats & Legend -->
     <aside class="control-panel">
       <!-- Evacuation Status Card -->
-      <div class="card status-card" id="status-card">
+      <div class="card status-card" id="status-card" aria-live="polite">
         <div class="card-header">
           <div class="status-indicator-wrap">
             <span class="status-pulse" id="status-pulse"></span>
@@ -134,8 +134,8 @@
         </div>
         <div class="card-body">
           <!-- Visible Hazard Control Panel (FIX 1) -->
-          <div class="hazard-control-panel" style="margin-bottom: 1.25rem;">
-            <div class="form-group" style="margin-bottom: 0.65rem;">
+          <div class="hazard-control-panel">
+            <div class="form-group mb-sm">
               <label for="select-hazard-element" class="form-label" id="txt-select-element">Select Element</label>
               <div class="select-wrapper">
                 <select id="select-hazard-element" class="form-control" aria-label="Select building element to control hazard">
@@ -146,7 +146,7 @@
                 </select>
               </div>
             </div>
-            <button id="btn-toggle-hazard" class="btn btn-warning" style="width: 100%;" disabled>
+            <button id="btn-toggle-hazard" class="btn btn-warning btn-full" disabled>
               <span id="txt-hazard-action">Block / Unblock</span>
             </button>
           </div>
