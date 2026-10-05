@@ -1,5 +1,9 @@
 # Smart Escape - Interactive Evacuation Route Simulator
 
+<div align="center">
+  <img src="logo.png" alt="Smart Escape Logo" width="160">
+</div>
+
 **AI DevFest Vibe-Coding Contest 2026**  
 Daffodil International University (DIU) | Computer and Programming Club (CPC)
 
