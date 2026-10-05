@@ -195,6 +195,15 @@ const nodeSvgElements = new Map();
 const edgeSvgElements = new Map();
 
 /**
+ * Truncate long labels for map rendering with ellipsis (FIX 6)
+ */
+function truncateLabel(label, maxLen = 12) {
+  if (!label) return "";
+  if (label.length <= maxLen) return label;
+  return label.slice(0, maxLen - 1) + "…";
+}
+
+/**
  * Build the building map SVG elements once per loaded building dataset
  */
 function buildSvgMap(simState) {
@@ -312,10 +321,10 @@ function buildSvgMap(simState) {
     if (node.type === "room") {
       // Room: rounded rectangle
       shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      shape.setAttribute("x", "-35");
-      shape.setAttribute("y", "-25");
-      shape.setAttribute("width", "70");
-      shape.setAttribute("height", "50");
+      shape.setAttribute("x", "-38");
+      shape.setAttribute("y", "-26");
+      shape.setAttribute("width", "76");
+      shape.setAttribute("height", "52");
       shape.setAttribute("rx", "10");
       shape.setAttribute("ry", "10");
     } else if (node.type === "junction") {
@@ -323,36 +332,38 @@ function buildSvgMap(simState) {
       shape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       shape.setAttribute("cx", "0");
       shape.setAttribute("cy", "0");
-      shape.setAttribute("r", "25");
+      shape.setAttribute("r", "30");
     } else if (node.type === "exit") {
       // Exit: rounded hex / stadium
       shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      shape.setAttribute("x", "-35");
-      shape.setAttribute("y", "-25");
-      shape.setAttribute("width", "70");
-      shape.setAttribute("height", "50");
+      shape.setAttribute("x", "-38");
+      shape.setAttribute("y", "-26");
+      shape.setAttribute("width", "76");
+      shape.setAttribute("height", "52");
       shape.setAttribute("rx", "14");
       shape.setAttribute("ry", "14");
     }
     shape.setAttribute("class", "node-shape");
     group.appendChild(shape);
 
-    // Node ID Label
-    const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    textLabel.setAttribute("class", "node-label");
-    textLabel.setAttribute("y", node.type === "junction" ? "0" : "-3");
-    textLabel.textContent = node.id;
-    group.appendChild(textLabel);
+    // Primary Label: node.label (truncated if long) - FIX 6
+    const primaryLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    primaryLabel.setAttribute("class", "node-label");
+    primaryLabel.setAttribute("y", "-5");
+    primaryLabel.textContent = truncateLabel(node.label, node.type === "junction" ? 10 : 12);
+    group.appendChild(primaryLabel);
 
-    // Sub-label for Room or Exit
-    let typeLabel = null;
-    if (node.type !== "junction") {
-      typeLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      typeLabel.setAttribute("class", "node-type-label");
-      typeLabel.setAttribute("y", "15");
-      typeLabel.textContent = t(`nodeTypes.${node.type}`);
-      group.appendChild(typeLabel);
-    }
+    // Secondary Label: node.id - FIX 6
+    const secondaryLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    secondaryLabel.setAttribute("class", "node-id-sublabel");
+    secondaryLabel.setAttribute("y", "10");
+    secondaryLabel.textContent = node.id;
+    group.appendChild(secondaryLabel);
+
+    // SVG <title> element for full label tooltip (FIX 6)
+    const titleElem = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    titleElem.textContent = `${node.label} [${node.id}]`;
+    group.appendChild(titleElem);
 
     // Node Interaction: Plain click selects in panel (and sets start for unblocked rooms/junctions)
     // Shift-click directly toggles hazard shortcut
@@ -413,8 +424,9 @@ function buildSvgMap(simState) {
       node,
       group,
       shape,
-      textLabel,
-      typeLabel
+      primaryLabel,
+      secondaryLabel,
+      titleElem
     });
   }
 }
@@ -462,10 +474,6 @@ function updateSvgMapVisuals(simState) {
       "aria-label",
       `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}`
     );
-
-    if (elemData.typeLabel) {
-      elemData.typeLabel.textContent = t(`nodeTypes.${node.type}`);
-    }
   }
 }
 
