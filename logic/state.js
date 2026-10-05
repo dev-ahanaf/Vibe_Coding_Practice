@@ -46,7 +46,12 @@ export class SimulationState {
   loadBuilding(rawData) {
     const valResult = validateBuildingData(rawData);
     if (!valResult.isValid) {
-      return { success: false, error: valResult.error };
+      return {
+        success: false,
+        error: valResult.error,
+        errorKey: valResult.errorKey,
+        errorParams: valResult.errorParams
+      };
     }
 
     const data = valResult.data;

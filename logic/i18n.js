@@ -15,6 +15,7 @@ export const translations = {
     selectStartLabel: "Select Start Location",
     selectElement: "Select Element",
     startNodeSelectPlaceholder: "-- Choose a start node --",
+    hazardSelectPlaceholder: "-- Choose an element --",
     startNode: "Start Node",
     routeFound: "Route Found",
     noRouteAvailable: "No route available",
@@ -30,6 +31,19 @@ export const translations = {
     legendBlocked: "Blocked / Hazardous",
     legendClosed: "Closed Exit",
     legendRoute: "Active Evacuation Path",
+    hintClickToToggle: "Click node/edge to select or toggle",
+    countBlockedRoomsJunctions: "Blocked Rooms/Junctions:",
+    countBlockedCorridors: "Blocked Corridors:",
+    countClosedExits: "Closed Exits:",
+    tip1Text: "💡 Tip: Click any Room or Junction on the map to set it as Start.",
+    tip2Text: "⚠️ Hazards: Use the hazard panel above, or Shift-click/right-click to toggle elements directly.",
+    noActiveRoute: "No active route",
+    calculating: "Calculating...",
+    blockedBadgeTag: "[BLOCKED]",
+    closedBadgeTag: "[CLOSED]",
+    optgroupRoomsJunctions: "Rooms & Junctions",
+    optgroupExits: "Exits",
+    optgroupCorridors: "Corridors",
     nodeTypes: {
       room: "Room",
       junction: "Junction",
@@ -42,6 +56,28 @@ export const translations = {
       unblockEdge: "Unblock Corridor",
       closeExit: "Close Exit",
       reopenExit: "Reopen Exit"
+    },
+    tooltip: {
+      type: "Type:",
+      status: "Status:",
+      active: "Active",
+      blocked: "Blocked",
+      closed: "Closed",
+      start: "(Start)",
+      clickHint: "Click: Select | Shift+Click/Right-Click: Toggle Hazard"
+    },
+    titles: {
+      loadSample: "Load Default Canonical Sample",
+      importJson: "Import building.json",
+      resetHazards: "Restore original initial_state hazards",
+      highContrast: "Toggle High-Contrast Mode",
+      exportPng: "Export Map as PNG",
+      langToggle: "Toggle language"
+    },
+    aria: {
+      selectStart: "Starting location",
+      selectHazardElement: "Select building element to control hazard",
+      closeAlert: "Close notification"
     },
     validationErrors: {
       invalidJSON: "Invalid JSON format: Unable to parse file.",
@@ -59,7 +95,9 @@ export const translations = {
       invalidEdgeCost: "Edge '{id}' must have a positive integer cost (> 0). Found: {cost}.",
       invalidInitialState: "'initial_state' must contain arrays: 'blocked_nodes', 'blocked_edges', 'closed_exits'.",
       initialStateUnknownId: "Unknown ID '{id}' referenced in initial_state.{category}.",
-      initialStateCategoryMismatch: "ID '{id}' in initial_state.{category} does not match expected category: expected {expectedType}, found {actualType}."
+      initialStateCategoryMismatch: "ID '{id}' in initial_state.{category} does not match expected category: expected {expectedType}, found {actualType}.",
+      fileReadError: "File read error.",
+      fetchError: "Could not fetch building.json"
     },
     status: {
       ready: "Ready. Select a starting location or adjust hazards.",
@@ -86,6 +124,7 @@ export const translations = {
     selectStartLabel: "শুরুর স্থান নির্বাচন করুন",
     selectElement: "উপাদান নির্বাচন করুন",
     startNodeSelectPlaceholder: "-- শুরুর নোড নির্বাচন করুন --",
+    hazardSelectPlaceholder: "-- উপাদান নির্বাচন করুন --",
     startNode: "শুরুর নোড",
     routeFound: "রুট পাওয়া গেছে",
     noRouteAvailable: "কোনো রুট পাওয়া যায়নি",
@@ -101,6 +140,19 @@ export const translations = {
     legendBlocked: "অবরুদ্ধ / ঝুঁকিপূর্ণ",
     legendClosed: "বন্ধ বহির্গমন পথ",
     legendRoute: "সক্রিয় নির্গমন রুট",
+    hintClickToToggle: "নির্বাচন বা টগল করতে নোড/করিডোরে ক্লিক করুন",
+    countBlockedRoomsJunctions: "অবরুদ্ধ কক্ষ/জাংশন:",
+    countBlockedCorridors: "অবরুদ্ধ করিডোর:",
+    countClosedExits: "বন্ধ বহির্গমন পথ:",
+    tip1Text: "💡 পরামর্শ: শুরুর স্থান হিসেবে নির্বাচন করতে মানচিত্রে যেকোনো কক্ষ বা জাংশনে ক্লিক করুন।",
+    tip2Text: "⚠️ বিপদাবস্থা: উপরের বিপদ নিয়ন্ত্রণ প্যানেল ব্যবহার করুন, অথবা সরাসরি টগল করতে Shift-ক্লিক/রাইট-ক্লিক করুন।",
+    noActiveRoute: "কোনো সক্রিয় রুট নেই",
+    calculating: "গণনা করা হচ্ছে...",
+    blockedBadgeTag: "[অবরুদ্ধ]",
+    closedBadgeTag: "[বন্ধ]",
+    optgroupRoomsJunctions: "কক্ষ ও জাংশনসমূহ",
+    optgroupExits: "বহির্গমন পথসমূহ",
+    optgroupCorridors: "করিডোরসমূহ",
     nodeTypes: {
       room: "কক্ষ",
       junction: "জাংশন",
@@ -113,6 +165,28 @@ export const translations = {
       unblockEdge: "করিডোর খুলুন",
       closeExit: "বহির্গমন বন্ধ করুন",
       reopenExit: "বহির্গমন খুলুন"
+    },
+    tooltip: {
+      type: "টাইপ:",
+      status: "অবস্থা:",
+      active: "সক্রিয়",
+      blocked: "অবরুদ্ধ",
+      closed: "বন্ধ",
+      start: "(শুরু)",
+      clickHint: "ক্লিক: নির্বাচন | Shift+ক্লিক/রাইট-ক্লিক: বিপদাবস্থা টগল"
+    },
+    titles: {
+      loadSample: "নমুনা ভবন লোড করুন",
+      importJson: "JSON ইম্পোর্ট করুন",
+      resetHazards: "প্রাথমিক বিপদাবস্থায় ফিরিয়ে নিন",
+      highContrast: "উচ্চ বৈসাদৃশ্য মোড পরিবর্তন করুন",
+      exportPng: "মানচিত্র PNG হিসেবে ডাউনলোড করুন",
+      langToggle: "ভাষা পরিবর্তন করুন"
+    },
+    aria: {
+      selectStart: "শুরুর অবস্থান",
+      selectHazardElement: "বিপদাবস্থা নিয়ন্ত্রণ করতে উপাদান নির্বাচন করুন",
+      closeAlert: "বিজ্ঞপ্তি বন্ধ করুন"
     },
     validationErrors: {
       invalidJSON: "অকার্যকর JSON ফরম্যাট: ফাইল পার্স করা যায়নি।",
@@ -130,7 +204,9 @@ export const translations = {
       invalidEdgeCost: "এজ '{id}' এর খরচ অবশ্যই একটি ধনাত্মক পূর্ণসংখ্যা হতে হবে। বর্তমান: {cost}।",
       invalidInitialState: "'initial_state' এ 'blocked_nodes', 'blocked_edges', 'closed_exits' অ্যারে থাকতে হবে।",
       initialStateUnknownId: "initial_state.{category} তে অজানা আইডি '{id}' পাওয়া গেছে।",
-      initialStateCategoryMismatch: "initial_state.{category} তে আইডি '{id}' এর ক্যাটাগরি মিলছে না: প্রত্যাশিত {expectedType}, কিন্তু পাওয়া গেছে {actualType}।"
+      initialStateCategoryMismatch: "initial_state.{category} তে আইডি '{id}' এর ক্যাটাগরি মিলছে না: প্রত্যাশিত {expectedType}, কিন্তু পাওয়া গেছে {actualType}।",
+      fileReadError: "ফাইল পড়তে সমস্যা হয়েছে।",
+      fetchError: "building.json লোড করা যায়নি।"
     },
     status: {
       ready: "প্রস্তুত। শুরুর স্থান নির্বাচন করুন অথবা বিপদাবস্থা পরিবর্তন করুন।",
@@ -168,7 +244,6 @@ export function t(keyPath, params = {}) {
     if (val && typeof val === "object" && k in val) {
       val = val[k];
     } else {
-      // Fallback to English
       val = null;
       break;
     }

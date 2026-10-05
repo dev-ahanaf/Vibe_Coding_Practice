@@ -128,7 +128,7 @@
       <div class="card hazard-card">
         <div class="card-header">
           <h2 class="card-title" id="txt-legend-title">Hazard Controls & Legend</h2>
-          <span class="hint-text">Click node/edge to toggle</span>
+          <span class="hint-text" id="txt-hint-text">Click node/edge to select or toggle</span>
         </div>
         <div class="card-body">
           <!-- Visible Hazard Control Panel (FIX 1) -->
@@ -179,15 +179,15 @@
           <!-- Active Hazards List -->
           <div class="active-hazards-summary">
             <div class="hazard-count-row">
-              <span>Blocked Rooms/Junctions:</span>
+              <span id="txt-count-nodes-label">Blocked Rooms/Junctions:</span>
               <strong id="count-blocked-nodes">0</strong>
             </div>
             <div class="hazard-count-row">
-              <span>Blocked Corridors:</span>
+              <span id="txt-count-edges-label">Blocked Corridors:</span>
               <strong id="count-blocked-edges">0</strong>
             </div>
             <div class="hazard-count-row">
-              <span>Closed Exits:</span>
+              <span id="txt-count-exits-label">Closed Exits:</span>
               <strong id="count-closed-exits">0</strong>
             </div>
           </div>
@@ -197,8 +197,8 @@
       <!-- Instructions & Shortcut Tips -->
       <div class="card tips-card">
         <div class="tips-body">
-          <p class="tip-line">💡 <strong>Tip:</strong> Click any Room or Junction on the map to set it as Start.</p>
-          <p class="tip-line">⚠️ <strong>Hazards:</strong> Shift-click or click the hazard icon to block/unblock nodes, corridors, or close exits.</p>
+          <p class="tip-line" id="txt-tip-line-1">💡 <strong>Tip:</strong> Click any Room or Junction on the map to set it as Start.</p>
+          <p class="tip-line" id="txt-tip-line-2">⚠️ <strong>Hazards:</strong> Use the hazard panel above, or Shift-click/right-click to toggle elements directly.</p>
         </div>
       </div>
     </aside>

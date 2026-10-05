@@ -8,46 +8,40 @@
 
 import { t } from "./i18n.js";
 
+function fail(key, params = {}) {
+  return {
+    isValid: false,
+    error: t(key, params),
+    errorKey: key,
+    errorParams: params
+  };
+}
+
 export function validateBuildingData(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return {
-      isValid: false,
-      error: t("validationErrors.invalidJSON")
-    };
+    return fail("validationErrors.invalidJSON");
   }
 
   // 1. Root fields check
   const requiredRoots = ["building", "nodes", "edges", "initial_state"];
   for (const root of requiredRoots) {
     if (!(root in data)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.missingRoot")
-      };
+      return fail("validationErrors.missingRoot");
     }
   }
 
   // 2. Building name
   if (typeof data.building !== "string" || data.building.trim().length === 0) {
-    return {
-      isValid: false,
-      error: t("validationErrors.invalidBuilding")
-    };
+    return fail("validationErrors.invalidBuilding");
   }
 
   // 3. Nodes and Edges arrays & Limits (2-60 nodes, 1-150 edges)
   if (!Array.isArray(data.nodes) || data.nodes.length < 2 || data.nodes.length > 60) {
-    return {
-      isValid: false,
-      error: t("validationErrors.nodeLimit")
-    };
+    return fail("validationErrors.nodeLimit");
   }
 
   if (!Array.isArray(data.edges) || data.edges.length < 1 || data.edges.length > 150) {
-    return {
-      isValid: false,
-      error: t("validationErrors.edgeLimit")
-    };
+    return fail("validationErrors.edgeLimit");
   }
 
   // 4. Validate Nodes
@@ -70,17 +64,11 @@ export function validateBuildingData(data) {
       !Number.isFinite(node.y) ||
       !["room", "junction", "exit"].includes(node.type)
     ) {
-      return {
-        isValid: false,
-        error: t("validationErrors.invalidNode", { id: node?.id || `#${i}` })
-      };
+      return fail("validationErrors.invalidNode", { id: node?.id || `#${i}` });
     }
 
     if (nodeMap.has(node.id)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.duplicateNodeId", { id: node.id })
-      };
+      return fail("validationErrors.duplicateNodeId", { id: node.id });
     }
 
     nodeMap.set(node.id, node);
@@ -94,10 +82,7 @@ export function validateBuildingData(data) {
   }
 
   if (!hasRoomOrJunction || !hasExit) {
-    return {
-      isValid: false,
-      error: t("validationErrors.missingStartOrExit")
-    };
+    return fail("validationErrors.missingStartOrExit");
   }
 
   // 5. Validate Edges
@@ -114,50 +99,32 @@ export function validateBuildingData(data) {
       typeof edge.from !== "string" ||
       typeof edge.to !== "string"
     ) {
-      return {
-        isValid: false,
-        error: t("validationErrors.invalidEdgeNodes", { id: edge?.id || `#${i}`, from: edge?.from, to: edge?.to })
-      };
+      return fail("validationErrors.invalidEdgeNodes", { id: edge?.id || `#${i}`, from: edge?.from, to: edge?.to });
     }
 
     if (edgeMap.has(edge.id)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.duplicateEdgeId", { id: edge.id })
-      };
+      return fail("validationErrors.duplicateEdgeId", { id: edge.id });
     }
     edgeMap.set(edge.id, edge);
 
     if (!nodeMap.has(edge.from) || !nodeMap.has(edge.to)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.invalidEdgeNodes", { id: edge.id, from: edge.from, to: edge.to })
-      };
+      return fail("validationErrors.invalidEdgeNodes", { id: edge.id, from: edge.from, to: edge.to });
     }
 
     // No self loops
     if (edge.from === edge.to) {
-      return {
-        isValid: false,
-        error: t("validationErrors.selfLoop", { id: edge.id, from: edge.from })
-      };
+      return fail("validationErrors.selfLoop", { id: edge.id, from: edge.from });
     }
 
     // Cost must be a positive integer (> 0)
     if (typeof edge.cost !== "number" || !Number.isInteger(edge.cost) || edge.cost <= 0) {
-      return {
-        isValid: false,
-        error: t("validationErrors.invalidEdgeCost", { id: edge.id, cost: edge.cost })
-      };
+      return fail("validationErrors.invalidEdgeCost", { id: edge.id, cost: edge.cost });
     }
 
     // No repeated node pairs (undirected)
     const pairKey = edge.from < edge.to ? `${edge.from}---${edge.to}` : `${edge.to}---${edge.from}`;
     if (pairSet.has(pairKey)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.repeatedPair", { u: edge.from, v: edge.to })
-      };
+      return fail("validationErrors.repeatedPair", { u: edge.from, v: edge.to });
     }
     pairSet.add(pairKey);
   }
@@ -171,63 +138,45 @@ export function validateBuildingData(data) {
     !Array.isArray(initState.blocked_edges) ||
     !Array.isArray(initState.closed_exits)
   ) {
-    return {
-      isValid: false,
-      error: t("validationErrors.invalidInitialState")
-    };
+    return fail("validationErrors.invalidInitialState");
   }
 
   // Category consistency: blocked nodes must exist and be room or junction
   for (const nodeId of initState.blocked_nodes) {
     if (!nodeMap.has(nodeId)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.initialStateUnknownId", { id: nodeId, category: "blocked_nodes" })
-      };
+      return fail("validationErrors.initialStateUnknownId", { id: nodeId, category: "blocked_nodes" });
     }
     const node = nodeMap.get(nodeId);
     if (node.type === "exit") {
-      return {
-        isValid: false,
-        error: t("validationErrors.initialStateCategoryMismatch", {
-          id: nodeId,
-          category: "blocked_nodes",
-          expectedType: "room/junction",
-          actualType: node.type
-        })
-      };
+      return fail("validationErrors.initialStateCategoryMismatch", {
+        id: nodeId,
+        category: "blocked_nodes",
+        expectedType: "room/junction",
+        actualType: node.type
+      });
     }
   }
 
   // Category consistency: closed exits must exist and be exit
   for (const exitId of initState.closed_exits) {
     if (!nodeMap.has(exitId)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.initialStateUnknownId", { id: exitId, category: "closed_exits" })
-      };
+      return fail("validationErrors.initialStateUnknownId", { id: exitId, category: "closed_exits" });
     }
     const node = nodeMap.get(exitId);
     if (node.type !== "exit") {
-      return {
-        isValid: false,
-        error: t("validationErrors.initialStateCategoryMismatch", {
-          id: exitId,
-          category: "closed_exits",
-          expectedType: "exit",
-          actualType: node.type
-        })
-      };
+      return fail("validationErrors.initialStateCategoryMismatch", {
+        id: exitId,
+        category: "closed_exits",
+        expectedType: "exit",
+        actualType: node.type
+      });
     }
   }
 
   // Blocked edges must exist
   for (const edgeId of initState.blocked_edges) {
     if (!edgeMap.has(edgeId)) {
-      return {
-        isValid: false,
-        error: t("validationErrors.initialStateUnknownId", { id: edgeId, category: "blocked_edges" })
-      };
+      return fail("validationErrors.initialStateUnknownId", { id: edgeId, category: "blocked_edges" });
     }
   }
 

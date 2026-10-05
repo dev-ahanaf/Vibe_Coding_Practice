@@ -63,11 +63,19 @@ const i18nBindings = [
   { id: "txt-legend-exit", key: "legendExit" },
   { id: "txt-legend-blocked", key: "legendBlocked" },
   { id: "txt-legend-closed", key: "legendClosed" },
-  { id: "txt-legend-route", key: "legendRoute" }
+  { id: "txt-legend-route", key: "legendRoute" },
+  { id: "txt-hint-text", key: "hintClickToToggle" },
+  { id: "txt-count-nodes-label", key: "countBlockedRoomsJunctions" },
+  { id: "txt-count-edges-label", key: "countBlockedCorridors" },
+  { id: "txt-count-exits-label", key: "countClosedExits" },
+  { id: "txt-tip-line-1", key: "tip1Text" },
+  { id: "txt-tip-line-2", key: "tip2Text" }
 ];
 
+let currentAlert = null;
+
 /**
- * Update all interface strings to active language
+ * Update all interface strings to active language (FIX 2)
  */
 function updateLanguageUI() {
   const lang = getLanguage();
@@ -86,19 +94,75 @@ function updateLanguageUI() {
     langToggleText.textContent = lang === "en" ? "বাংলা" : "English";
   }
 
+  // Button titles and aria-labels (FIX 2)
+  if (btnLoadSample) {
+    btnLoadSample.title = t("titles.loadSample");
+    btnLoadSample.setAttribute("aria-label", t("titles.loadSample"));
+  }
+  const btnImportLabel = document.getElementById("btn-import-label");
+  if (btnImportLabel) {
+    btnImportLabel.title = t("titles.importJson");
+    btnImportLabel.setAttribute("aria-label", t("titles.importJson"));
+  }
+  if (btnReset) {
+    btnReset.title = t("titles.resetHazards");
+    btnReset.setAttribute("aria-label", t("titles.resetHazards"));
+  }
+  if (btnHighContrast) {
+    btnHighContrast.title = t("titles.highContrast");
+    btnHighContrast.setAttribute("aria-label", t("titles.highContrast"));
+  }
+  if (btnExportPng) {
+    btnExportPng.title = t("titles.exportPng");
+    btnExportPng.setAttribute("aria-label", t("titles.exportPng"));
+  }
+  if (btnLangToggle) {
+    btnLangToggle.setAttribute("aria-label", t("titles.langToggle"));
+  }
+  if (selectStartNode) {
+    selectStartNode.setAttribute("aria-label", t("aria.selectStart"));
+  }
+  if (selectHazardElement) {
+    selectHazardElement.setAttribute("aria-label", t("aria.selectHazardElement"));
+  }
+  if (btnAlertClose) {
+    btnAlertClose.setAttribute("aria-label", t("aria.closeAlert"));
+  }
+
+  // Group labels
+  if (optgroupRoomsJunctions) optgroupRoomsJunctions.label = t("optgroupRoomsJunctions");
+  if (optgroupExits) optgroupExits.label = t("optgroupExits");
+  if (optgroupCorridors) optgroupCorridors.label = t("optgroupCorridors");
+
+  // Re-translate visible alert banner (FIX 2)
+  if (currentAlert) {
+    if (currentAlert.keyPath) {
+      alertMessage.textContent = t(currentAlert.keyPath, currentAlert.params);
+    } else if (currentAlert.rawMessage) {
+      alertMessage.textContent = currentAlert.rawMessage;
+    }
+  }
+
   // Refresh dynamic state display
   renderState(state);
 }
 
 /**
- * Display alert banner with error message
+ * Display alert banner with error key or message (FIX 2)
  */
-function showAlert(message) {
-  alertMessage.textContent = message;
+function showAlert(keyPathOrMsg, params = {}) {
+  if (typeof keyPathOrMsg === "string" && keyPathOrMsg.includes(".")) {
+    currentAlert = { keyPath: keyPathOrMsg, params };
+    alertMessage.textContent = t(keyPathOrMsg, params);
+  } else {
+    currentAlert = { rawMessage: keyPathOrMsg };
+    alertMessage.textContent = keyPathOrMsg;
+  }
   alertBanner.style.display = "flex";
 }
 
 function hideAlert() {
+  currentAlert = null;
   alertBanner.style.display = "none";
   alertMessage.textContent = "";
 }
@@ -346,18 +410,35 @@ function renderSvgMap(simState) {
 }
 
 /**
- * Show hover tooltip for map nodes
+ * Show hover tooltip for map nodes (FIX 2 i18n & FIX 4 safe DOM textContent)
  */
 function showNodeTooltip(e, node, isBlocked, isClosedExit, isStart) {
-  let statusText = isBlocked ? "⚠️ Blocked" : (isClosedExit ? "🚫 Closed" : "✓ Active");
-  if (isStart) statusText += " (Start)";
+  let statusText = isBlocked ? `⚠️ ${t("tooltip.blocked")}` : (isClosedExit ? `🚫 ${t("tooltip.closed")}` : `✓ ${t("tooltip.active")}`);
+  if (isStart) statusText += ` ${t("tooltip.start")}`;
 
-  tooltip.innerHTML = `
-    <strong>${node.label}</strong> [${node.id}]<br/>
-    Type: ${t(`nodeTypes.${node.type}`)}<br/>
-    Status: ${statusText}<br/>
-    <span style="color:#94a3b8;font-size:0.72rem;">Click: Select Start | Shift+Click/Right-Click: Toggle Hazard</span>
-  `;
+  tooltip.replaceChildren();
+
+  const strong = document.createElement("strong");
+  strong.textContent = `${node.label} [${node.id}]`;
+  tooltip.appendChild(strong);
+  tooltip.appendChild(document.createElement("br"));
+
+  const typeSpan = document.createElement("span");
+  typeSpan.textContent = `${t("tooltip.type")} ${t(`nodeTypes.${node.type}`)}`;
+  tooltip.appendChild(typeSpan);
+  tooltip.appendChild(document.createElement("br"));
+
+  const statusSpan = document.createElement("span");
+  statusSpan.textContent = `${t("tooltip.status")} ${statusText}`;
+  tooltip.appendChild(statusSpan);
+  tooltip.appendChild(document.createElement("br"));
+
+  const hintSpan = document.createElement("span");
+  hintSpan.style.color = "#94a3b8";
+  hintSpan.style.fontSize = "0.72rem";
+  hintSpan.textContent = t("tooltip.clickHint");
+  tooltip.appendChild(hintSpan);
+
   tooltip.style.display = "block";
   tooltip.style.left = `${e.pageX + 12}px`;
   tooltip.style.top = `${e.pageY + 12}px`;
@@ -386,7 +467,7 @@ function renderState(simState) {
   countBlockedEdges.textContent = simState.blockedEdges.size;
   countClosedExits.textContent = simState.closedExits.size;
 
-  // 3. Update Route Results Card
+  // 4. Update Route Results Card
   const result = simState.routeResult;
   if (!result) return;
 
@@ -397,8 +478,8 @@ function renderState(simState) {
     valTotalCost.textContent = result.cost;
     valDestinationExit.textContent = result.exit;
 
-    // Build step chips
-    valNodeSequence.innerHTML = "";
+    // Build step chips safely (FIX 4)
+    valNodeSequence.replaceChildren();
     result.route.forEach((nodeId, idx) => {
       const chip = document.createElement("span");
       chip.className = `sequence-chip ${idx === result.route.length - 1 ? "exit-chip" : ""}`;
@@ -419,7 +500,12 @@ function renderState(simState) {
     statusPulse.className = "status-pulse blocked";
     valTotalCost.textContent = "—";
     valDestinationExit.textContent = "—";
-    valNodeSequence.innerHTML = `<span class="sequence-empty" style="color:var(--accent-crimson);">${t("startingLocationBlocked")}</span>`;
+    valNodeSequence.replaceChildren();
+    const emptySpan = document.createElement("span");
+    emptySpan.className = "sequence-empty";
+    emptySpan.style.color = "var(--accent-crimson)";
+    emptySpan.textContent = t("startingLocationBlocked");
+    valNodeSequence.appendChild(emptySpan);
   } else if (result.status === "no_route") {
     // Exact string requirement: "No route available"
     routeStatusBadge.textContent = t("noRouteAvailable");
@@ -427,17 +513,26 @@ function renderState(simState) {
     statusPulse.className = "status-pulse blocked";
     valTotalCost.textContent = "—";
     valDestinationExit.textContent = "—";
-    valNodeSequence.innerHTML = `<span class="sequence-empty" style="color:var(--accent-crimson);">${t("noRouteAvailable")}</span>`;
+    valNodeSequence.replaceChildren();
+    const emptySpan = document.createElement("span");
+    emptySpan.className = "sequence-empty";
+    emptySpan.style.color = "var(--accent-crimson)";
+    emptySpan.textContent = t("noRouteAvailable");
+    valNodeSequence.appendChild(emptySpan);
   } else {
     routeStatusBadge.textContent = t("startNodeSelectPlaceholder");
     routeStatusBadge.className = "badge badge-warning";
     statusPulse.className = "status-pulse warning";
     valTotalCost.textContent = "—";
     valDestinationExit.textContent = "—";
-    valNodeSequence.innerHTML = `<span class="sequence-empty">${t("startNodeSelectPlaceholder")}</span>`;
+    valNodeSequence.replaceChildren();
+    const emptySpan = document.createElement("span");
+    emptySpan.className = "sequence-empty";
+    emptySpan.textContent = t("startNodeSelectPlaceholder");
+    valNodeSequence.appendChild(emptySpan);
   }
 
-  // 4. Update SVG Map
+  // 5. Update SVG Map
   renderSvgMap(simState);
 }
 
@@ -446,7 +541,7 @@ function renderState(simState) {
  */
 function populateStartSelect(simState) {
   const currentVal = selectStartNode.value;
-  selectStartNode.innerHTML = "";
+  selectStartNode.replaceChildren();
 
   const defaultOpt = document.createElement("option");
   defaultOpt.value = "";
@@ -458,7 +553,7 @@ function populateStartSelect(simState) {
       const opt = document.createElement("option");
       opt.value = node.id;
       const isBlocked = simState.blockedNodes.has(node.id);
-      opt.textContent = `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}${isBlocked ? " [BLOCKED]" : ""}`;
+      opt.textContent = `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}${isBlocked ? ` ${t("blockedBadgeTag")}` : ""}`;
       selectStartNode.appendChild(opt);
     }
   }
@@ -528,21 +623,21 @@ function populateHazardElementSelect(simState) {
   if (!selectHazardElement || !simState.graph) return;
   const currentVal = selectHazardElement.value;
 
-  optgroupRoomsJunctions.innerHTML = "";
-  optgroupExits.innerHTML = "";
-  optgroupCorridors.innerHTML = "";
+  optgroupRoomsJunctions.replaceChildren();
+  optgroupExits.replaceChildren();
+  optgroupCorridors.replaceChildren();
 
   for (const node of simState.graph.nodes) {
     const opt = document.createElement("option");
     if (node.type === "room" || node.type === "junction") {
       opt.value = `node:${node.id}`;
       const isBlocked = simState.blockedNodes.has(node.id);
-      opt.textContent = `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}${isBlocked ? ` [${t("legendBlocked")}]` : ""}`;
+      opt.textContent = `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}${isBlocked ? ` ${t("blockedBadgeTag")}` : ""}`;
       optgroupRoomsJunctions.appendChild(opt);
     } else if (node.type === "exit") {
       opt.value = `exit:${node.id}`;
       const isClosed = simState.closedExits.has(node.id);
-      opt.textContent = `${node.label} (${node.id}) - ${t("nodeTypes.exit")}${isClosed ? ` [${t("legendClosed")}]` : ""}`;
+      opt.textContent = `${node.label} (${node.id}) - ${t("nodeTypes.exit")}${isClosed ? ` ${t("closedBadgeTag")}` : ""}`;
       optgroupExits.appendChild(opt);
     }
   }
@@ -551,7 +646,7 @@ function populateHazardElementSelect(simState) {
     const opt = document.createElement("option");
     opt.value = `edge:${edge.id}`;
     const isBlocked = simState.blockedEdges.has(edge.id);
-    opt.textContent = `${edge.from} ↔ ${edge.to} (Cost: ${edge.cost})${isBlocked ? ` [${t("legendBlocked")}]` : ""}`;
+    opt.textContent = `${edge.from} ↔ ${edge.to} (${t("totalCost")}: ${edge.cost})${isBlocked ? ` ${t("blockedBadgeTag")}` : ""}`;
     optgroupCorridors.appendChild(opt);
   }
 
@@ -602,16 +697,19 @@ function setupEventListeners() {
   btnLoadSample.addEventListener("click", async () => {
     try {
       const resp = await fetch("building.json");
-      if (!resp.ok) throw new Error("Could not fetch canonical building.json");
+      if (!resp.ok) {
+        showAlert("validationErrors.fetchError");
+        return;
+      }
       const data = await resp.json();
       const res = state.loadBuilding(data);
       if (!res.success) {
-        showAlert(res.error);
+        showAlert(res.errorKey || res.error, res.errorParams);
       } else {
         hideAlert();
       }
     } catch (err) {
-      showAlert(err.message);
+      showAlert("validationErrors.fetchError");
     }
   });
 
@@ -626,17 +724,17 @@ function setupEventListeners() {
         const rawJson = JSON.parse(event.target.result);
         const res = state.loadBuilding(rawJson);
         if (!res.success) {
-          showAlert(res.error);
+          showAlert(res.errorKey || res.error, res.errorParams);
         } else {
           hideAlert();
         }
       } catch (parseErr) {
-        showAlert(t("validationErrors.invalidJSON"));
+        showAlert("validationErrors.invalidJSON");
       }
       inputFileImport.value = "";
     };
     reader.onerror = () => {
-      showAlert("File read error.");
+      showAlert("validationErrors.fileReadError");
       inputFileImport.value = "";
     };
     reader.readAsText(file);
