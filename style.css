@@ -1,58 +1,138 @@
 /* ==========================================================================
-   SMART ESCAPE - MODERN DESIGN SYSTEM & STYLESHEET
-   Aesthetics: Rich dark mode, glassmorphism, crisp typography, micro-interactions
+   SMART ESCAPE - DESIGN SYSTEM TOKENS & TYPOGRAPHY
+   Design Direction: Building Safety Control Room (Light-First & Dark Mode)
+   Aesthetics: Architectural drafting, wayfinding signage, calm, trustworthy
    ========================================================================== */
 
 :root {
-  --bg-primary: #0b0f19;
-  --bg-surface: #111827;
-  --bg-surface-elevated: rgba(17, 24, 39, 0.85);
-  --bg-card: rgba(31, 41, 55, 0.5);
-  --bg-card-hover: rgba(55, 65, 81, 0.65);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: #38bdf8;
-  
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
-  --text-dim: #6b7280;
+  /* 1. Surface / Paper Palette (Light Theme - Default) */
+  --paper-bg: #f8fafc;           /* Warm technical drafting off-white */
+  --paper-panel: #ffffff;        /* Crisp panel / card surface */
+  --paper-panel-elevated: #ffffff;
+  --paper-subtle: #f1f5f9;       /* Input backgrounds, secondary chips */
+  --paper-hover: #e2e8f0;
+  --paper-grid: rgba(15, 23, 42, 0.05); /* Subtle blueprint grid lines */
+  --paper-grid-major: rgba(15, 23, 42, 0.09);
 
-  --accent-cyan: #06b6d4;
-  --accent-blue: #3b82f6;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-crimson: #ef4444;
+  /* 2. Ink / Typography Palette (WCAG AA compliant: contrast > 5:1) */
+  --ink-primary: #0f172a;        /* Deep architectural navy/charcoal */
+  --ink-secondary: #334155;      /* Slate technical grey */
+  --ink-muted: #64748b;          /* Metadata / captions */
+  --ink-dim: #94a3b8;
+  --ink-border: #cbd5e1;         /* Technical drafting border */
+  --ink-border-subtle: #e2e8f0;
+  --border-focus: #1d4ed8;
 
-  --route-active-color: #10b981;
-  --route-glow-color: rgba(16, 185, 129, 0.45);
-  
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Hind Siliguri', -apple-system, sans-serif;
+  /* 3. Functional Safety Signage Colors */
+  --safe-route: #047857;         /* Evacuation-sign green (AA on light & dark) */
+  --safe-route-bg: rgba(4, 120, 87, 0.12);
+  --safe-route-border: #047857;
+  --safe-route-halo: rgba(4, 120, 87, 0.22);
 
+  --hazard-red: #b91c1c;         /* Signal emergency red */
+  --hazard-bg: rgba(185, 28, 28, 0.1);
+  --hazard-border: #b91c1c;
+
+  --closed-amber: #b45309;       /* Warning closed exit amber */
+  --closed-bg: rgba(180, 83, 9, 0.12);
+  --closed-border: #b45309;
+
+  --start-blue: #1d4ed8;         /* Evacuation origin blue */
+  --start-bg: rgba(29, 78, 216, 0.1);
+  --start-border: #1d4ed8;
+
+  --accent-neutral: #334155;     /* Disciplined architectural neutral */
+  --focus-ring: 0 0 0 3px rgba(29, 78, 216, 0.3);
+
+  /* 4. Typography */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Hind Siliguri', 'Noto Sans Bengali', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+  /* 5. Spacing Scale (4px/8px multiples) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 6. Radii */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 14px;
   --radius-pill: 9999px;
 
-  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.35);
-  --transition-fast: 0.15s ease;
+  /* 7. Elevation (Max 2 shadow levels) */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+
+  /* 8. Motion (Subtle 150-250ms) */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 9. Backward compatibility aliases */
+  --bg-primary: var(--paper-bg);
+  --bg-surface: var(--paper-panel);
+  --bg-surface-elevated: var(--paper-panel-elevated);
+  --bg-card: var(--paper-panel);
+  --bg-card-hover: var(--paper-hover);
+  --border-subtle: var(--ink-border-subtle);
+  --text-main: var(--ink-primary);
+  --text-muted: var(--ink-secondary);
+  --text-dim: var(--ink-dim);
+  --accent-cyan: var(--start-blue);
+  --accent-blue: var(--start-blue);
+  --accent-emerald: var(--safe-route);
+  --accent-amber: var(--closed-amber);
+  --accent-crimson: var(--hazard-red);
+  --route-active-color: var(--safe-route);
+  --route-glow-color: var(--safe-route-halo);
+  --shadow-card: var(--shadow-sm);
+  --shadow-glow: none;
 }
 
-/* High Contrast Mode Override */
-body.theme-high-contrast {
-  --bg-primary: #000000;
-  --bg-surface: #0a0a0a;
-  --bg-surface-elevated: #111111;
-  --bg-card: #181818;
-  --border-subtle: #ffffff;
-  --text-main: #ffffff;
-  --text-muted: #e5e5e5;
-  --accent-cyan: #00ffff;
-  --accent-emerald: #00ff66;
-  --accent-crimson: #ff0033;
-  --route-active-color: #00ff66;
-  --shadow-card: none;
+/* Dark Theme ("Night Operations Console") */
+[data-theme="dark"], body.theme-dark {
+  --paper-bg: #0b0f17;           /* Deep technical dark */
+  --paper-panel: #131b26;        /* Console card surface */
+  --paper-panel-elevated: #1a2332;
+  --paper-subtle: #1e293b;
+  --paper-hover: #263345;
+  --paper-grid: rgba(255, 255, 255, 0.04);
+  --paper-grid-major: rgba(255, 255, 255, 0.08);
+
+  --ink-primary: #f8fafc;        /* High contrast crisp off-white */
+  --ink-secondary: #94a3b8;      /* Cool slate */
+  --ink-muted: #64748b;
+  --ink-dim: #475569;
+  --ink-border: #334155;
+  --ink-border-subtle: #1e293b;
+  --border-focus: #38bdf8;
+
+  --safe-route: #10b981;
+  --safe-route-bg: rgba(16, 185, 129, 0.15);
+  --safe-route-border: #10b981;
+  --safe-route-halo: rgba(16, 185, 129, 0.28);
+
+  --hazard-red: #ef4444;
+  --hazard-bg: rgba(239, 68, 68, 0.15);
+  --hazard-border: #ef4444;
+
+  --closed-amber: #f59e0b;
+  --closed-bg: rgba(245, 158, 11, 0.15);
+  --closed-border: #f59e0b;
+
+  --start-blue: #38bdf8;
+  --start-bg: rgba(56, 189, 248, 0.15);
+  --start-border: #38bdf8;
+
+  --accent-neutral: #94a3b8;
+  --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.35);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 * {
@@ -63,15 +143,33 @@ body.theme-high-contrast {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-primary);
-  color: var(--text-main);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  background-color: var(--paper-bg);
+  color: var(--ink-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(at 10% 20%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure Bengali text has balanced line-height and no glyph clipping */
+:lang(bn), [lang="bn"], .lang-bn {
+  font-family: 'Hind Siliguri', 'Noto Sans Bengali', -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--ink-primary);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+code, kbd, samp, pre, .font-mono {
+  font-family: var(--font-mono);
 }
 
 /* Header */

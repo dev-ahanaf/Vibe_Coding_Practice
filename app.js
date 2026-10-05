@@ -31,7 +31,8 @@ const inputFileImport = document.getElementById("input-file-import");
 const btnReset = document.getElementById("btn-reset");
 const btnLoadSample = document.getElementById("btn-load-sample");
 const btnLangToggle = document.getElementById("btn-lang-toggle");
-const btnHighContrast = document.getElementById("btn-high-contrast");
+const btnThemeToggle = document.getElementById("btn-theme-toggle");
+const svgThemeIcon = document.getElementById("svg-theme-icon");
 const btnExportPng = document.getElementById("btn-export-png");
 const tooltip = document.getElementById("map-tooltip");
 
@@ -108,9 +109,11 @@ function updateLanguageUI() {
     btnReset.title = t("titles.resetHazards");
     btnReset.setAttribute("aria-label", t("titles.resetHazards"));
   }
-  if (btnHighContrast) {
-    btnHighContrast.title = t("titles.highContrast");
-    btnHighContrast.setAttribute("aria-label", t("titles.highContrast"));
+  if (btnThemeToggle) {
+    const isDark = document.body.getAttribute("data-theme") === "dark";
+    const labelKey = isDark ? "titles.themeLight" : "titles.themeDark";
+    btnThemeToggle.title = t(labelKey);
+    btnThemeToggle.setAttribute("aria-label", t(labelKey));
   }
   if (btnExportPng) {
     btnExportPng.title = t("titles.exportPng");
@@ -143,8 +146,52 @@ function updateLanguageUI() {
     }
   }
 
+  // Synchronize theme icon and title
+  updateThemeUI(document.body.getAttribute("data-theme") || "light");
+
   // Refresh dynamic state display
   renderState(state);
+}
+
+/**
+ * Synchronize theme toggle icon, title, and aria attributes
+ */
+function updateThemeUI(theme) {
+  if (!btnThemeToggle || !svgThemeIcon) return;
+  const isDark = theme === "dark";
+  const titleKey = isDark ? "titles.themeLight" : "titles.themeDark";
+  btnThemeToggle.title = t(titleKey);
+  btnThemeToggle.setAttribute("aria-label", t(titleKey));
+
+  svgThemeIcon.replaceChildren();
+  if (isDark) {
+    // Sun icon for dark mode (click to switch to light)
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", "12");
+    circle.setAttribute("r", "5");
+    svgThemeIcon.appendChild(circle);
+
+    const rays = [
+      [12, 1, 12, 3], [12, 21, 12, 23],
+      [4.22, 4.22, 5.64, 5.64], [18.36, 18.36, 19.78, 19.78],
+      [1, 12, 3, 12], [21, 12, 23, 12],
+      [4.22, 19.78, 5.64, 18.36], [18.36, 5.64, 19.78, 4.22]
+    ];
+    rays.forEach(([x1, y1, x2, y2]) => {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      svgThemeIcon.appendChild(line);
+    });
+  } else {
+    // Moon icon for light mode (click to switch to dark)
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z");
+    svgThemeIcon.appendChild(path);
+  }
 }
 
 /**
@@ -832,10 +879,15 @@ function setupEventListeners() {
     updateLanguageUI();
   });
 
-  // High contrast mode toggle
-  btnHighContrast.addEventListener("click", () => {
-    document.body.classList.toggle("theme-high-contrast");
-  });
+  // Light / Dark Theme toggle
+  if (btnThemeToggle) {
+    btnThemeToggle.addEventListener("click", () => {
+      const currentTheme = document.body.getAttribute("data-theme") || "light";
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      document.body.setAttribute("data-theme", newTheme);
+      updateThemeUI(newTheme);
+    });
+  }
 
   // PNG Export feature
   btnExportPng.addEventListener("click", () => {
@@ -844,11 +896,81 @@ function setupEventListeners() {
 }
 
 /**
- * Export SVG Map as PNG image
+ * Export SVG Map as PNG image (FIX 7: inline computed styles and viewBox dimensions)
  */
 function exportMapToPng() {
+  const clone = svgMap.cloneNode(true);
+
+  // Parse viewBox for exact dimensions
+  const viewBoxAttr = svgMap.getAttribute("viewBox");
+  let vbWidth = 800;
+  let vbHeight = 600;
+  let vbX = 0;
+  let vbY = 0;
+  if (viewBoxAttr) {
+    const parts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
+    if (parts.length === 4) {
+      vbX = parts[0];
+      vbY = parts[1];
+      vbWidth = parts[2];
+      vbHeight = parts[3];
+    }
+  }
+
+  // Set explicit dimensions on clone
+  clone.setAttribute("width", vbWidth);
+  clone.setAttribute("height", vbHeight);
+  clone.setAttribute("viewBox", `${vbX} ${vbY} ${vbWidth} ${vbHeight}`);
+
+  // Inline computed styles into the clone
+  const origElements = svgMap.querySelectorAll("*");
+  const cloneElements = clone.querySelectorAll("*");
+
+  for (let i = 0; i < origElements.length; i++) {
+    const orig = origElements[i];
+    const cloned = cloneElements[i];
+    if (!cloned) continue;
+
+    // Do not alter defs/filter/pattern internals
+    if (orig.tagName.toLowerCase() === "defs" || orig.closest("defs")) continue;
+
+    const cs = window.getComputedStyle(orig);
+
+    // Copy fill
+    if (cs.fill) {
+      if (cs.fill.includes("hazard-stripes")) {
+        cloned.setAttribute("fill", "url(#hazard-stripes)");
+      } else {
+        cloned.style.fill = cs.fill;
+      }
+    }
+
+    // Copy stroke properties
+    if (cs.stroke && cs.stroke !== "none") {
+      cloned.style.stroke = cs.stroke;
+    }
+    if (cs.strokeWidth) {
+      cloned.style.strokeWidth = cs.strokeWidth;
+    }
+    if (cs.strokeDasharray && cs.strokeDasharray !== "none") {
+      cloned.style.strokeDasharray = cs.strokeDasharray;
+    }
+    if (cs.opacity) {
+      cloned.style.opacity = cs.opacity;
+    }
+
+    // Copy text typography
+    if (orig.tagName.toLowerCase() === "text") {
+      cloned.style.fontFamily = cs.fontFamily || "'Outfit', sans-serif";
+      cloned.style.fontSize = cs.fontSize;
+      cloned.style.fontWeight = cs.fontWeight;
+      cloned.style.textAnchor = cs.textAnchor || "middle";
+      cloned.style.dominantBaseline = cs.dominantBaseline || "central";
+    }
+  }
+
   const serializer = new XMLSerializer();
-  const svgString = serializer.serializeToString(svgMap);
+  const svgString = serializer.serializeToString(clone);
   const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
   const URL = window.URL || window.webkitURL || window;
   const blobURL = URL.createObjectURL(svgBlob);
@@ -856,8 +978,8 @@ function exportMapToPng() {
 
   image.onload = () => {
     const canvas = document.getElementById("export-canvas");
-    canvas.width = svgMap.clientWidth || 1200;
-    canvas.height = svgMap.clientHeight || 800;
+    canvas.width = vbWidth;
+    canvas.height = vbHeight;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#0b0f19";
     ctx.fillRect(0, 0, canvas.width, canvas.height);

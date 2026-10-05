@@ -71,6 +71,8 @@ export const translations = {
       importJson: "Import building.json",
       resetHazards: "Restore original initial_state hazards",
       highContrast: "Toggle High-Contrast Mode",
+      themeLight: "Switch to Light Mode",
+      themeDark: "Switch to Dark Mode",
       exportPng: "Export Map as PNG",
       langToggle: "Toggle language"
     },
@@ -180,6 +182,8 @@ export const translations = {
       importJson: "JSON ইম্পোর্ট করুন",
       resetHazards: "প্রাথমিক বিপদাবস্থায় ফিরিয়ে নিন",
       highContrast: "উচ্চ বৈসাদৃশ্য মোড পরিবর্তন করুন",
+      themeLight: "লাইট মোডে পরিবর্তন করুন",
+      themeDark: "ডার্ক মোডে পরিবর্তন করুন",
       exportPng: "মানচিত্র PNG হিসেবে ডাউনলোড করুন",
       langToggle: "ভাষা পরিবর্তন করুন"
     },
