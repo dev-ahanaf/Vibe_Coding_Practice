@@ -35,6 +35,14 @@ const btnHighContrast = document.getElementById("btn-high-contrast");
 const btnExportPng = document.getElementById("btn-export-png");
 const tooltip = document.getElementById("map-tooltip");
 
+// Hazard Control Panel DOM elements (FIX 1)
+const selectHazardElement = document.getElementById("select-hazard-element");
+const btnToggleHazard = document.getElementById("btn-toggle-hazard");
+const txtHazardAction = document.getElementById("txt-hazard-action");
+const optgroupRoomsJunctions = document.getElementById("optgroup-rooms-junctions");
+const optgroupExits = document.getElementById("optgroup-exits");
+const optgroupCorridors = document.getElementById("optgroup-corridors");
+
 // Text elements for i18n
 const i18nBindings = [
   { id: "txt-app-title", key: "appTitle" },
@@ -45,6 +53,7 @@ const i18nBindings = [
   { id: "txt-btn-reset", key: "resetSimulation" },
   { id: "txt-route-summary", key: "routeSummary" },
   { id: "txt-select-start", key: "selectStartLabel" },
+  { id: "txt-select-element", key: "selectElement" },
   { id: "txt-total-cost", key: "totalCost" },
   { id: "txt-destination-exit", key: "destinationExit" },
   { id: "txt-node-sequence", key: "nodeSequence" },
@@ -53,6 +62,7 @@ const i18nBindings = [
   { id: "txt-legend-junction", key: "legendJunction" },
   { id: "txt-legend-exit", key: "legendExit" },
   { id: "txt-legend-blocked", key: "legendBlocked" },
+  { id: "txt-legend-closed", key: "legendClosed" },
   { id: "txt-legend-route", key: "legendRoute" }
 ];
 
@@ -147,6 +157,18 @@ function renderSvgMap(simState) {
     const isBlocked = blockedEdges.has(edge.id);
     const inRoute = edgesUsedSet.has(edge.id);
 
+    // Invisible wider hit-area for easy touch/mouse/keyboard targeting (FIX 1)
+    const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    hitArea.setAttribute("x1", fromNode.x);
+    hitArea.setAttribute("y1", fromNode.y);
+    hitArea.setAttribute("x2", toNode.x);
+    hitArea.setAttribute("y2", toNode.y);
+    hitArea.setAttribute("class", "corridor-hitarea");
+    hitArea.setAttribute("data-edge-id", edge.id);
+    hitArea.setAttribute("tabindex", "0");
+    hitArea.setAttribute("role", "button");
+    hitArea.setAttribute("aria-label", `Corridor ${edge.from} to ${edge.to}, cost ${edge.cost}`);
+
     // Edge Line
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("x1", fromNode.x);
@@ -155,13 +177,6 @@ function renderSvgMap(simState) {
     line.setAttribute("y2", toNode.y);
     line.setAttribute("class", `corridor-edge ${inRoute ? "in-route" : ""} ${isBlocked ? "blocked" : ""}`);
     line.setAttribute("data-edge-id", edge.id);
-
-    // Click on corridor line toggles block
-    line.addEventListener("click", () => {
-      simState.toggleEdgeBlock(edge.id);
-    });
-
-    svgEdgesLayer.appendChild(line);
 
     // Edge Cost Pill Badge at Midpoint
     const midX = (fromNode.x + toNode.x) / 2;
@@ -185,11 +200,30 @@ function renderSvgMap(simState) {
     pillGroup.appendChild(pillBg);
     pillGroup.appendChild(pillText);
 
-    pillGroup.addEventListener("click", (e) => {
-      e.stopPropagation();
-      simState.toggleEdgeBlock(edge.id);
+    // Corridor interaction: plain click selects in panel; Shift+click toggles immediately
+    const onEdgeActivate = (e) => {
+      selectHazardElementById("edge", edge.id);
+      if (e.shiftKey) {
+        simState.toggleEdgeBlock(edge.id);
+      }
+    };
+
+    hitArea.addEventListener("click", onEdgeActivate);
+    hitArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onEdgeActivate(e);
+      }
     });
 
+    line.addEventListener("click", onEdgeActivate);
+    pillGroup.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onEdgeActivate(e);
+    });
+
+    svgEdgesLayer.appendChild(hitArea);
+    svgEdgesLayer.appendChild(line);
     svgEdgesLayer.appendChild(pillGroup);
   }
 
@@ -205,6 +239,9 @@ function renderSvgMap(simState) {
     group.setAttribute("class", `graph-node node-${node.type} ${isStart ? "is-start" : ""} ${isBlocked ? "blocked" : ""} ${isClosedExit ? "closed-exit" : ""} ${inRoute ? "in-route" : ""}`);
     group.setAttribute("transform", `translate(${node.x}, ${node.y})`);
     group.setAttribute("data-node-id", node.id);
+    group.setAttribute("tabindex", "0");
+    group.setAttribute("role", "button");
+    group.setAttribute("aria-label", `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}`);
 
     if (node.type === "room") {
       // Room: rounded rectangle
@@ -254,24 +291,46 @@ function renderSvgMap(simState) {
       group.appendChild(typeLabel);
     }
 
-    // Node Interaction: Click to select start (if unblocked room/junction), or Shift-Click to block/unblock
-    group.addEventListener("click", (e) => {
+    // Node Interaction: Plain click selects in panel (and sets start for unblocked rooms/junctions)
+    // Shift-click directly toggles hazard shortcut
+    const onNodeActivate = (e) => {
+      if (node.type === "exit") {
+        selectHazardElementById("exit", node.id);
+      } else {
+        selectHazardElementById("node", node.id);
+      }
+
       if (e.shiftKey) {
-        simState.toggleNodeBlock(node.id);
+        if (node.type === "exit") {
+          simState.toggleExitClose(node.id);
+        } else {
+          simState.toggleNodeBlock(node.id);
+        }
       } else {
         if (node.type === "room" || node.type === "junction") {
           simState.setStartNode(node.id);
-        } else if (node.type === "exit") {
-          // Clicking exit toggles open/close
-          simState.toggleExitClose(node.id);
         }
+      }
+    };
+
+    group.addEventListener("click", onNodeActivate);
+    group.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onNodeActivate(e);
       }
     });
 
-    // Right click directly toggles hazard
+    // Right click shortcut directly toggles hazard
     group.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      simState.toggleNodeBlock(node.id);
+      if (node.type === "exit") {
+        selectHazardElementById("exit", node.id);
+        simState.toggleExitClose(node.id);
+      } else {
+        selectHazardElementById("node", node.id);
+        simState.toggleNodeBlock(node.id);
+      }
     });
 
     // Tooltip listeners
@@ -319,7 +378,10 @@ function renderState(simState) {
   // 1. Update start node dropdown
   populateStartSelect(simState);
 
-  // 2. Update Hazard Counts
+  // 2. Update Hazard dropdown options & action button (FIX 1)
+  populateHazardElementSelect(simState);
+
+  // 3. Update Hazard Counts
   countBlockedNodes.textContent = simState.blockedNodes.size;
   countBlockedEdges.textContent = simState.blockedEdges.size;
   countClosedExits.textContent = simState.closedExits.size;
@@ -405,6 +467,101 @@ function populateStartSelect(simState) {
 }
 
 /**
+ * Select element in the hazard dropdown and update button state (FIX 1)
+ */
+function selectHazardElementById(elementType, elementId) {
+  if (!selectHazardElement) return;
+  selectHazardElement.value = `${elementType}:${elementId}`;
+  updateHazardActionButton(state);
+}
+
+/**
+ * Update the hazard action button text, class and enabled state
+ */
+function updateHazardActionButton(simState) {
+  if (!selectHazardElement || !btnToggleHazard || !txtHazardAction) return;
+  const val = selectHazardElement.value;
+  if (!val || !simState.graph) {
+    btnToggleHazard.disabled = true;
+    txtHazardAction.textContent = "Block / Unblock";
+    btnToggleHazard.className = "btn btn-warning";
+    return;
+  }
+
+  btnToggleHazard.disabled = false;
+  const [type, id] = val.split(":");
+
+  if (type === "node") {
+    const isBlocked = simState.blockedNodes.has(id);
+    if (isBlocked) {
+      txtHazardAction.textContent = t("actions.unblockNode");
+      btnToggleHazard.className = "btn btn-secondary";
+    } else {
+      txtHazardAction.textContent = t("actions.blockNode");
+      btnToggleHazard.className = "btn btn-warning";
+    }
+  } else if (type === "exit") {
+    const isClosed = simState.closedExits.has(id);
+    if (isClosed) {
+      txtHazardAction.textContent = t("actions.reopenExit");
+      btnToggleHazard.className = "btn btn-secondary";
+    } else {
+      txtHazardAction.textContent = t("actions.closeExit");
+      btnToggleHazard.className = "btn btn-danger";
+    }
+  } else if (type === "edge") {
+    const isBlocked = simState.blockedEdges.has(id);
+    if (isBlocked) {
+      txtHazardAction.textContent = t("actions.unblockEdge");
+      btnToggleHazard.className = "btn btn-secondary";
+    } else {
+      txtHazardAction.textContent = t("actions.blockEdge");
+      btnToggleHazard.className = "btn btn-warning";
+    }
+  }
+}
+
+/**
+ * Populate grouped hazard element selector (Rooms/Junctions, Exits, Corridors)
+ */
+function populateHazardElementSelect(simState) {
+  if (!selectHazardElement || !simState.graph) return;
+  const currentVal = selectHazardElement.value;
+
+  optgroupRoomsJunctions.innerHTML = "";
+  optgroupExits.innerHTML = "";
+  optgroupCorridors.innerHTML = "";
+
+  for (const node of simState.graph.nodes) {
+    const opt = document.createElement("option");
+    if (node.type === "room" || node.type === "junction") {
+      opt.value = `node:${node.id}`;
+      const isBlocked = simState.blockedNodes.has(node.id);
+      opt.textContent = `${node.label} (${node.id}) - ${t(`nodeTypes.${node.type}`)}${isBlocked ? ` [${t("legendBlocked")}]` : ""}`;
+      optgroupRoomsJunctions.appendChild(opt);
+    } else if (node.type === "exit") {
+      opt.value = `exit:${node.id}`;
+      const isClosed = simState.closedExits.has(node.id);
+      opt.textContent = `${node.label} (${node.id}) - ${t("nodeTypes.exit")}${isClosed ? ` [${t("legendClosed")}]` : ""}`;
+      optgroupExits.appendChild(opt);
+    }
+  }
+
+  for (const edge of simState.graph.edges) {
+    const opt = document.createElement("option");
+    opt.value = `edge:${edge.id}`;
+    const isBlocked = simState.blockedEdges.has(edge.id);
+    opt.textContent = `${edge.from} ↔ ${edge.to} (Cost: ${edge.cost})${isBlocked ? ` [${t("legendBlocked")}]` : ""}`;
+    optgroupCorridors.appendChild(opt);
+  }
+
+  if (currentVal) {
+    selectHazardElement.value = currentVal;
+  }
+  updateHazardActionButton(simState);
+}
+
+/**
  * Initialize event listeners
  */
 function setupEventListeners() {
@@ -414,6 +571,25 @@ function setupEventListeners() {
   // Start node dropdown change
   selectStartNode.addEventListener("change", (e) => {
     state.setStartNode(e.target.value);
+  });
+
+  // Hazard dropdown change (FIX 1)
+  selectHazardElement.addEventListener("change", () => {
+    updateHazardActionButton(state);
+  });
+
+  // Hazard action button click (FIX 1)
+  btnToggleHazard.addEventListener("click", () => {
+    const val = selectHazardElement.value;
+    if (!val) return;
+    const [type, id] = val.split(":");
+    if (type === "node") {
+      state.toggleNodeBlock(id);
+    } else if (type === "exit") {
+      state.toggleExitClose(id);
+    } else if (type === "edge") {
+      state.toggleEdgeBlock(id);
+    }
   });
 
   // Reset simulation hazards

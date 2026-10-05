@@ -131,6 +131,24 @@
           <span class="hint-text">Click node/edge to toggle</span>
         </div>
         <div class="card-body">
+          <!-- Visible Hazard Control Panel (FIX 1) -->
+          <div class="hazard-control-panel" style="margin-bottom: 1.25rem;">
+            <div class="form-group" style="margin-bottom: 0.65rem;">
+              <label for="select-hazard-element" class="form-label" id="txt-select-element">Select Element</label>
+              <div class="select-wrapper">
+                <select id="select-hazard-element" class="form-control" aria-label="Select building element to control hazard">
+                  <option value="">-- Choose an element --</option>
+                  <optgroup label="Rooms & Junctions" id="optgroup-rooms-junctions"></optgroup>
+                  <optgroup label="Exits" id="optgroup-exits"></optgroup>
+                  <optgroup label="Corridors" id="optgroup-corridors"></optgroup>
+                </select>
+              </div>
+            </div>
+            <button id="btn-toggle-hazard" class="btn btn-warning" style="width: 100%;" disabled>
+              <span id="txt-hazard-action">Block / Unblock</span>
+            </button>
+          </div>
+
           <div class="legend-items">
             <div class="legend-row">
               <span class="legend-swatch node-room-swatch"></span>
@@ -147,6 +165,10 @@
             <div class="legend-row">
               <span class="legend-swatch node-blocked-swatch"></span>
               <span class="legend-text" id="txt-legend-blocked">Blocked / Hazardous</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-swatch node-closed-swatch"></span>
+              <span class="legend-text" id="txt-legend-closed">Closed Exit</span>
             </div>
             <div class="legend-row">
               <span class="legend-swatch edge-route-swatch"></span>
