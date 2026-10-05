@@ -265,6 +265,31 @@ assert(translations.en.startingLocationBlocked === "Starting location blocked", 
 assert(translations.bn.noRouteAvailable === "কোনো রুট পাওয়া যায়নি", "Verified Bangla string: 'কোনো রুট পাওয়া যায়নি'");
 assert(translations.bn.startingLocationBlocked === "শুরুর অবস্থান অবরুদ্ধ", "Verified Bangla string: 'শুরুর অবস্থান অবরুদ্ধ'");
 
+// ----------------------------------------------------
+// TEST GROUP 5: XSS Sanitization & Plain-Text Rendering (Fix 4)
+// ----------------------------------------------------
+console.log("\nTEST GROUP 5: XSS Prevention & Safe Plain-Text Handling (Fix 4)");
+const xssGraph = {
+  building: "<script>alert('xss-building')</script>",
+  nodes: [
+    { id: "R1", label: "<img src=x onerror=alert(1)>", type: "room", x: 10, y: 10 },
+    { id: "E1", label: "<svg onload=alert(2)>", type: "exit", x: 50, y: 50 }
+  ],
+  edges: [
+    { id: "e1", from: "R1", to: "E1", cost: 5 }
+  ],
+  initial_state: { blocked_nodes: [], blocked_edges: [], closed_exits: [] }
+};
+const xssValidation = validateBuildingData(xssGraph);
+assert(xssValidation.isValid, "Schema validator accepts labels with HTML/script syntax as raw strings");
+const xssState = new SimulationState();
+const xssLoad = xssState.loadBuilding(xssGraph);
+assert(xssLoad.success, "State loads graph with raw HTML-like labels");
+assert(
+  xssState.graph.nodes[0].label === "<img src=x onerror=alert(1)>",
+  "Node label preserved literally without script execution"
+);
+
 console.log("\n=========================================");
 console.log(`TOTAL TESTS: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
 console.log("=========================================\n");

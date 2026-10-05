@@ -212,7 +212,7 @@ function renderSvgMap(simState) {
   }
 
   // 1. Render Edges Layer
-  svgEdgesLayer.innerHTML = "";
+  svgEdgesLayer.replaceChildren();
   for (const edge of graph.edges) {
     const fromNode = nodeMap.get(edge.from);
     const toNode = nodeMap.get(edge.to);
@@ -292,7 +292,7 @@ function renderSvgMap(simState) {
   }
 
   // 2. Render Nodes Layer
-  svgNodesLayer.innerHTML = "";
+  svgNodesLayer.replaceChildren();
   for (const node of graph.nodes) {
     const isStart = node.id === startNodeId;
     const isBlocked = blockedNodes.has(node.id);
