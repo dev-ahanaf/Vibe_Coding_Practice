@@ -71,7 +71,23 @@ const i18nBindings = [
   { id: "txt-count-edges-label", key: "countBlockedCorridors" },
   { id: "txt-count-exits-label", key: "countClosedExits" },
   { id: "txt-tip-line-1", key: "tip1Text" },
-  { id: "txt-tip-line-2", key: "tip2Text" }
+  { id: "txt-tip-line-2", key: "tip2Text" },
+  { id: "txt-footer-desc", key: "footerDesc" },
+  { id: "txt-footer-trust", key: "footerTrust" },
+  { id: "txt-footer-contest-head", key: "footerContestHead" },
+  { id: "txt-footer-event-lbl", key: "footerEventLbl" },
+  { id: "txt-footer-event-val", key: "footerEventVal" },
+  { id: "txt-footer-org-lbl", key: "footerOrgLbl" },
+  { id: "txt-footer-org-val", key: "footerOrgVal" },
+  { id: "txt-footer-author-lbl", key: "footerAuthorLbl" },
+  { id: "txt-footer-guide-head", key: "footerGuideHead" },
+  { id: "txt-footer-how-to-use", key: "footerHowToUse" },
+  { id: "txt-guide-step-1", key: "guideStep1" },
+  { id: "txt-guide-step-2", key: "guideStep2" },
+  { id: "txt-guide-step-3", key: "guideStep3" },
+  { id: "txt-guide-step-4", key: "guideStep4" },
+  { id: "txt-footer-copy", key: "footerCopy" },
+  { id: "txt-footer-standards", key: "footerStandards" }
 ];
 
 let currentAlert = null;
