@@ -6,6 +6,7 @@
 import { validateBuildingData } from "../logic/validate.js";
 import { calculateEvacuationRoute, compareNodeSequences } from "../logic/route.js";
 import { SimulationState } from "../logic/state.js";
+import { translations } from "../logic/i18n.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -254,6 +255,15 @@ const validDisconnected = validateBuildingData({
   initial_state: { blocked_nodes: [], blocked_edges: [], closed_exits: [] }
 });
 assert(validDisconnected.isValid, "Allow valid disconnected graph");
+
+// ----------------------------------------------------
+// TEST GROUP 4: Exact Required Strings Verification (Fix 3 / Statement §3.2)
+// ----------------------------------------------------
+console.log("\nTEST GROUP 4: Exact Required Strings (Problem Statement §3.2 & §04.1)");
+assert(translations.en.noRouteAvailable === "No route available", "Exact English string: 'No route available'");
+assert(translations.en.startingLocationBlocked === "Starting location blocked", "Exact English string: 'Starting location blocked'");
+assert(translations.bn.noRouteAvailable === "কোনো রুট পাওয়া যায়নি", "Verified Bangla string: 'কোনো রুট পাওয়া যায়নি'");
+assert(translations.bn.startingLocationBlocked === "শুরুর অবস্থান অবরুদ্ধ", "Verified Bangla string: 'শুরুর অবস্থান অবরুদ্ধ'");
 
 console.log("\n=========================================");
 console.log(`TOTAL TESTS: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
