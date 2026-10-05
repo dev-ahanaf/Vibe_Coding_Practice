@@ -279,6 +279,14 @@ code, kbd, samp, pre, .font-mono {
   font-family: inherit;
 }
 
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
 .btn:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
@@ -1240,6 +1248,10 @@ body.theme-dark .graph-node.blocked .node-shape {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:hover, .btn:active, .sequence-chip:hover, .edge-cost-pill:hover, .graph-node:hover {
+    transform: none !important;
   }
   .corridor-edge.in-route {
     animation: none !important;
